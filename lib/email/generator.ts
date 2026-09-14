@@ -11,8 +11,17 @@ type StudentWork = {
   summary: string;
 };
 
-function honorific(lastName: string) {
-  return `Dr. ${lastName}`;
+function honorificLastName(lastName: string, fullName?: string) {
+  const source = `${lastName} ${fullName ?? ""}`.trim();
+  const parts = source
+    .replace(/[^A-Za-z.'\- ]/g, " ")
+    .split(/\s+/)
+    .filter((part) => part.length > 1 && !/^(b|jr|sr|ii|iii|iv)\.?$/i.test(part));
+  return parts.at(-1) || lastName.split(/\s+/).at(-1) || lastName;
+}
+
+function honorific(lastName: string, fullName?: string) {
+  return `Dr. ${honorificLastName(lastName, fullName)}`;
 }
 
 function allWork(profile: StudentProfile): StudentWork[] {
@@ -165,7 +174,7 @@ export function generateGroundedEmail(input: {
   const studentName = input.student.name.split(" ")[0] || "Saket";
   const body = sanitizeGeneratedText(
     [
-      `Hello ${honorific(input.professorLastName)},`,
+      `Hello ${honorific(input.professorLastName, input.professorFullName)},`,
       ``,
       `My name is ${studentName}, and I am a ${input.student.currentStatus.toLowerCase()} at UT Dallas interested in pursuing ${degreeFocus(input.student)}. I am interested in your research on ${topicPhrase}. I would love to learn more about your lab's work on ${labWork} and see if I am able to assist with your research!`,
       ``,

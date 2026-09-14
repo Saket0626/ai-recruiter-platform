@@ -2,6 +2,7 @@ import { isGenericInbox, isValidEmailShape, normalizeEmail } from "@/lib/securit
 import { isResumeSupportedClaim } from "@/lib/resume/claims";
 import { wordCount } from "@/lib/email/generator";
 import { draftUsesResearchDetail, extractGroundedResearchDetail } from "@/lib/email/research-detail";
+import { topicSupportedByEvidence } from "@/lib/research/keywords";
 import { styleFailures } from "@/lib/email/style";
 import type { StudentProfile } from "@/lib/validation/schemas";
 
@@ -89,7 +90,7 @@ export function validateEmailDraft(input: {
 
   const evidence = input.evidenceTexts.join("\n").toLowerCase();
   for (const topic of input.topics) {
-    if (!evidence.includes(topic.toLowerCase().slice(0, 18))) {
+    if (!topicSupportedByEvidence(topic, evidence)) {
       failures.push({
         code: "unsupported_professor_claim",
         message: `Research topic "${topic}" is not supported by stored evidence.`,

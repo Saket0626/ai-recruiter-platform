@@ -18,15 +18,19 @@ const GENERIC_LOCAL_PARTS = new Set([
   "alumni",
   "undergraduate",
   "graduate",
-  "dean",
-  "chair",
-  "cs-dept",
-  "cis",
-  "helpdesk",
-  "noreply",
-  "no-reply",
-  "postmaster",
-]);
+    "dean",
+    "chair",
+    "cs-dept",
+    "cis",
+    "helpdesk",
+    "noreply",
+    "no-reply",
+    "postmaster",
+    "oea",
+    "general",
+    "affairs",
+    "directory",
+  ]);
 
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -41,8 +45,9 @@ export function isGenericInbox(email: string): boolean {
   const local = normalizeEmail(email).split("@")[0] ?? "";
   const localRoot = local.split("+")[0] ?? "";
   if (GENERIC_LOCAL_PARTS.has(localRoot)) return true;
-  if (localRoot.endsWith("-office") || localRoot.endsWith("-info")) return true;
-  if (localRoot.includes("department") || localRoot.includes("admissions")) return true;
+  if (localRoot.endsWith("-office") || localRoot.endsWith("-info") || localRoot.endsWith("-general")) return true;
+  if (localRoot.includes("department") || localRoot.includes("admissions") || localRoot.includes("general")) return true;
+  if (/^[a-z]{2,3}\d{6,}$/.test(localRoot)) return true;
   return false;
 }
 

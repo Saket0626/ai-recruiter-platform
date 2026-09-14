@@ -22,6 +22,7 @@ export type ExtractedFaculty = {
 
 function splitName(fullName: string) {
   let cleaned = fullName
+    .replace(/([a-z])(Associate|Assistant|Professor|Lecturer|Instructor)/g, "$1 $2")
     .replace(/\s+/g, " ")
     .replace(/\b(Professor|Associate|Assistant|Instructor|Lecturer|Dr\.?|Ph\.D\.?|Chair)\b/gi, "")
     .trim();
@@ -32,17 +33,30 @@ function splitName(fullName: string) {
   const parts = cleaned.split(" ").filter(Boolean);
   return {
     firstName: parts[0] ?? cleaned,
-    lastName: parts.slice(1).join(" ") || cleaned,
+    lastName: parts.at(-1) || cleaned,
     fullName: cleaned,
   };
 }
 
-function looksLikePersonName(value: string) {
-  const trimmed = value.replace(/\b(Professor|Associate|Assistant|Instructor|Lecturer|Dr\.?)\b/gi, "").trim();
-  if (trimmed.length < 4 || trimmed.length > 80) return false;
-  if (/faculty|department|university|computer science|home|contact/i.test(trimmed)) return false;
+export function looksLikePersonName(value: string) {
+  const trimmed = value
+    .replace(/([a-z])(Associate|Assistant|Professor|Lecturer|Instructor)/g, "$1 $2")
+    .replace(/\b(Professor|Associate|Assistant|Instructor|Lecturer|Dr\.?)\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (trimmed.length < 4 || trimmed.length > 70) return false;
+  if (
+    /skip to|main content|searchmenu|secondary navigation|external affairs|facts & figures|about us|faculty directory|department of|computer science people/i.test(
+      trimmed,
+    )
+  ) {
+    return false;
+  }
+  if (/\b(search|menu|navigation|content|university|department|contact|faculty|people)\b/i.test(trimmed)) {
+    return false;
+  }
   if (/^[A-Z][A-Za-z.'\-]+,\s+[A-Z][A-Za-z.'\-]+/.test(trimmed)) return true;
-  return /^[A-Z][A-Za-z.'\-]+(?:\s+[A-Z][A-Za-z.'\-]+){1,3}$/.test(trimmed);
+  return /^[A-Z][A-Za-z.'\-]+(?:\s+[A-Z]\.){0,2}(?:\s+[A-Z][A-Za-z.'\-]+){1,2}$/.test(trimmed);
 }
 
 function extractNameFromText(text: string) {
@@ -80,7 +94,7 @@ export function extractFacultyFromDirectory(html: string, pageUrl: string, unive
       text.split(email)[0] ||
       "";
     const extractedName = extractNameFromText(nameCandidate) || extractNameFromText(text);
-    if (!extractedName) return;
+    if (!extractedName || !looksLikePersonName(extractedName)) return;
     const names = splitName(extractedName);
     const profileLink = container
       .find("a[href]")

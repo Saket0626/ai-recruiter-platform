@@ -174,3 +174,13 @@ export function findKeywordMatches(text: string) {
 export function uniqueLabels(matches: Array<{ label: string }>) {
   return [...new Set(matches.map((match) => match.label))];
 }
+
+export function topicSupportedByEvidence(topic: string, evidence: string) {
+  const haystack = normalizeText(evidence);
+  const needle = topic.toLowerCase().trim();
+  if (!needle) return false;
+  if (haystack.includes(needle.slice(0, Math.min(18, needle.length)))) return true;
+  const family = KEYWORD_FAMILIES.find((group) => group.label.toLowerCase() === needle);
+  if (!family) return false;
+  return family.terms.some((term) => haystack.includes(term.toLowerCase()));
+}

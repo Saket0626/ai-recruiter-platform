@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { extractEmails, isGenericInbox, normalizeEmail, normalizeUrl, preferUniversityEmail } from "@/lib/security/email";
 import { extractFacultyFromDirectory } from "@/lib/research/parser";
 import { identityKey } from "@/lib/security/email";
+import { topicSupportedByEvidence } from "@/lib/research/keywords";
 
 const directory = `
 <html><body>
@@ -27,7 +28,11 @@ describe("email extraction and normalization", () => {
   it("blocks generic inboxes", () => {
     expect(isGenericInbox("info@cs.utdallas.edu")).toBe(true);
     expect(isGenericInbox("admissions@mit.edu")).toBe(true);
+    expect(isGenericInbox("oea@cs.utexas.edu")).toBe(true);
+    expect(isGenericInbox("cse-general@cse.tamu.edu")).toBe(true);
+    expect(isGenericInbox("gxa120930@utdallas.edu")).toBe(true);
     expect(isGenericInbox("hamlen@utdallas.edu")).toBe(false);
+    expect(isGenericInbox("farokh.bastani@utdallas.edu")).toBe(false);
   });
 
   it("extracts emails from text", () => {
@@ -49,10 +54,27 @@ describe("email extraction and normalization", () => {
   it("parses faculty directory rows", () => {
     const people = extractFacultyFromDirectory(directory, "https://cs.utdallas.edu/people/faculty/", "utdallas.edu");
     expect(people.some((person) => person.email === "hamlen@utdallas.edu")).toBe(true);
+    expect(people.find((person) => person.email === "hamlen@utdallas.edu")?.lastName).toBe("Hamlen");
     expect(people.every((person) => person.email !== "info@utdallas.edu")).toBe(true);
+  });
+
+  it("does not treat page chrome as a professor", () => {
+    const html = `
+      <html><body>
+        <a href="#main">Skip to main content Search SearchMenu Computer Science People</a>
+        <a href="mailto:dam@seas.harvard.edu">dam@seas.harvard.edu</a>
+      </body></html>
+    `;
+    const people = extractFacultyFromDirectory(html, "https://cs.harvard.edu/people", "harvard.edu");
+    expect(people.every((person) => !/skip to main/i.test(person.fullName))).toBe(true);
   });
 
   it("uses a stable identity key", () => {
     expect(identityKey({ emailNormalized: "a@b.edu", university: "X", fullName: "A B" })).toBe("email:a@b.edu");
+  });
+
+  it("treats family keyword terms as evidence for a topic label", () => {
+    expect(topicSupportedByEvidence("program analysis", "The lab uses static analysis on binaries.")).toBe(true);
+    expect(topicSupportedByEvidence("natural language processing", "This page has no research.")).toBe(false);
   });
 });

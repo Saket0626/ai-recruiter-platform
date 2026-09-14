@@ -5,7 +5,8 @@ import { DEFAULT_RESEARCH_KEYWORDS } from "@/lib/config/defaults";
 import { logger } from "@/lib/logging/logger";
 import { analyzeProfessorResearch } from "@/lib/research/analyzer";
 import { FallbackResearchProvider } from "@/lib/research/crawler";
-import { extractFacultyFromDirectory, extractProfileDetails, sourcePriority } from "@/lib/research/parser";
+import { extractFacultyFromDirectory, extractProfileDetails, looksLikePersonName, sourcePriority } from "@/lib/research/parser";
+import { topicSupportedByEvidence } from "@/lib/research/keywords";
 import { scoreProfessorRelevance } from "@/lib/research/scorer";
 import { CompositeSearchProvider } from "@/lib/search/composite";
 import { generateGroundedEmail } from "@/lib/email/generator";
@@ -200,6 +201,8 @@ async function discoverOneUniversity(input: {
     const pages = await input.research.retrieve([seed]);
     for (const page of pages) {
       for (const person of extractFacultyFromDirectory(page.html, page.url, input.university.domain)) {
+        if (!looksLikePersonName(person.fullName)) continue;
+        if (person.email && isGenericInbox(person.email)) continue;
         const key = (person.email || person.facultyPageUrl || person.fullName).toLowerCase();
         if (seen.has(key)) continue;
         seen.add(key);
@@ -216,7 +219,8 @@ async function discoverOneUniversity(input: {
     const people = extractFacultyFromDirectory(page.html, page.url, input.university.domain);
     const fallbackPerson =
       people[0] ?? nameFromHit(hits.find((hit) => hit.url === url)?.title ?? "", page.url, input.university.domain, page.text);
-    if (!fallbackPerson) continue;
+    if (!fallbackPerson || !looksLikePersonName(fallbackPerson.fullName)) continue;
+    if (fallbackPerson.email && isGenericInbox(fallbackPerson.email)) continue;
     const key = (fallbackPerson.email || fallbackPerson.facultyPageUrl || fallbackPerson.fullName).toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
@@ -243,16 +247,20 @@ async function discoverOneUniversity(input: {
 
 function nameFromHit(title: string, url: string, domain: string, text: string) {
   const cleaned = title.replace(/[-|].*$/, "").trim();
-  const parts = cleaned.split(/\s+/);
-  if (parts.length < 2) return null;
-  const emailMatch = text.match(new RegExp(`[A-Z0-9._%+-]+@[\\w.-]*${domain.replace(".", "\\.")}`, "i"));
-  return {
+  if (!looksLikePersonName(cleaned)) return null;
+  const names = {
+    firstName: cleaned.split(/\s+/)[0] ?? cleaned,
+    lastName: cleaned.split(/\s+/).filter(Boolean).at(-1) || cleaned,
     fullName: cleaned,
-    firstName: parts[0]!,
-    lastName: parts.slice(1).join(" "),
+  };
+  const emailMatch = text.match(new RegExp(`[A-Z0-9._%+-]+@[\\w.-]*${domain.replace(".", "\\.")}`, "i"));
+  const email = emailMatch?.[0] ? emailMatch[0].toLowerCase() : null;
+  if (email && isGenericInbox(email)) return null;
+  return {
+    ...names,
     title: null,
-    email: emailMatch?.[0] ?? null,
-    emailSourceUrl: emailMatch ? url : null,
+    email,
+    emailSourceUrl: email ? url : null,
     facultyPageUrl: url,
     labUrl: null,
     personalWebsite: null,
@@ -281,6 +289,12 @@ async function persistAndResearch(input: {
   runId: string;
   research: FallbackResearchProvider;
 }) {
+  if (!looksLikePersonName(input.person.fullName)) {
+    return { researched: false, qualified: false, queued: false };
+  }
+  if (input.person.email && isGenericInbox(input.person.email)) {
+    return { researched: false, qualified: false, queued: false };
+  }
   const professor = await upsertProfessor({
     ...input.person,
     department: input.department,
@@ -300,7 +314,14 @@ async function persistAndResearch(input: {
     return { researched: false, qualified: false, queued: false };
   }
 
-  const evidenceRows = [];
+  const evidenceRows: Array<{
+    professorId: string;
+    url: string;
+    title: string | null;
+    extractedText: string;
+    claim: string;
+    sourcePriority: number;
+  }> = [];
   let combinedText = input.person.snippet;
   for (const page of pages) {
     const details = extractProfileDetails(page.html, page.url, input.domain);
@@ -332,28 +353,37 @@ async function persistAndResearch(input: {
 
   const analysis = await analyzeProfessorResearch({
     professorName: professor.fullName,
-    sources: pages.map((page) => ({ url: page.url, title: page.title, text: page.text })),
+    sources: pages.map((page, index) => ({
+      url: page.url,
+      title: page.title,
+      text: evidenceRows[index]?.extractedText || page.text,
+    })),
     student: input.student,
   });
+  const evidenceText = evidenceRows.map((row) => row.extractedText).join("\n");
+  const topics = analysis.research_topics.filter((topic) => topicSupportedByEvidence(topic, evidenceText));
   const scored = scoreProfessorRelevance({
     pageText: combinedText,
     student: input.student,
     hasCurrentActivity: analysis.current_projects.length > 0 || /202[3-9]|2026/.test(combinedText),
   });
-  const insufficient = analysis.insufficient_evidence || analysis.research_topics.length === 0 || scored.score < 20;
+  const latestEmail = (await prisma.professor.findUnique({ where: { id: professor.id }, select: { email: true } }))?.email;
+  const genericInbox = latestEmail ? isGenericInbox(latestEmail) : true;
+  const insufficient =
+    analysis.insufficient_evidence || topics.length === 0 || scored.score < 20 || !latestEmail || genericInbox;
   const status = insufficient ? "INSUFFICIENT_EVIDENCE" : scored.score >= input.minScore ? "QUALIFIED" : "RESEARCHED";
 
   await prisma.professor.update({
     where: { id: professor.id },
     data: {
-      researchTopics: JSON.stringify(analysis.research_topics),
+      researchTopics: JSON.stringify(topics),
       researchSummary: analysis.research_summary,
       currentProjects: JSON.stringify(analysis.current_projects),
       relevanceScore: insufficient ? scored.score : Math.round((scored.score + analysis.relevance_score) / 2),
       relevanceExplanation: analysis.relevance_reason || scored.explanation,
       scoringFactors: JSON.stringify(scored.factors),
       insufficientEvidence: insufficient,
-      genericInbox: professor.email ? isGenericInbox(professor.email) : false,
+      genericInbox,
       status,
     },
   });
@@ -368,7 +398,7 @@ async function persistAndResearch(input: {
   const email = generateGroundedEmail({
     professorLastName: professor.lastName,
     professorFullName: professor.fullName,
-    topics: analysis.research_topics,
+    topics,
     researchSummary: analysis.research_summary,
     student: input.student,
     evidenceTexts: evidenceRows.map((row) => row.extractedText),
@@ -379,7 +409,7 @@ async function persistAndResearch(input: {
     professorEmail: latest.email,
     subject: email.subject,
     body: email.body,
-    topics: analysis.research_topics,
+    topics,
     evidenceTexts: evidenceRows.map((row) => row.extractedText),
     evidenceUrls: evidenceRows.map((row) => row.url),
     student: input.student,

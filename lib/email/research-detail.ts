@@ -1,5 +1,5 @@
 const SKIP =
-  /ignore (all )?previous|you are (chatgpt|an ai)|click here|accept cookies|enable javascript|privacy policy|terms of (use|service)|copyright \d{4}|all rights reserved|skip to (main )?content/i;
+  /ignore (all )?previous|you are (chatgpt|an ai)|click here|accept cookies|enable javascript|privacy policy|terms of (use|service)|copyright \d{4}|all rights reserved|skip to (main )?content|honors and awards|meritorious service|additional information|search menu|secondary navigation/i;
 
 const RESEARCHY =
   /research|lab|stud(y|ies)|security|privacy|system|model|learn|algorithm|analysis|network|data|software|information|economic|attack|defense|program|language|vision|database|comput|method|framework|protocol|organization|technology/i;
