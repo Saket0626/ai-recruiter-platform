@@ -48,5 +48,5 @@ next-env.d.ts
 /prisma/dev.db
 /prisma/dev.db-journal
 /data/token-cache.enc
-/data/resume.pdf
 /data/*.pdf
+!/data/resume.pdf
