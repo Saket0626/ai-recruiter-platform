@@ -1,0 +1,6 @@
+---
+description: ResearchReach testing constraints
+alwaysApply: true
+---
+
+Use offline fixtures and mocked Graph transport. Test factual grounding, injection, duplicates, concurrency, limits, approvals and ambiguous sends. Never delete or weaken tests to pass. Report only checks actually run.

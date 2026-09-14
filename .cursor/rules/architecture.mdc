@@ -1,0 +1,6 @@
+---
+description: ResearchReach architecture constraints
+alwaysApply: true
+---
+
+Use focused TypeScript modules and provider interfaces. Keep discovery, evidence, scoring, generation, auth, sending, persistence, and UI separate. Read PROJECT_SPEC.md first.
