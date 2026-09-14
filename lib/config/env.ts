@@ -2,8 +2,12 @@ import { z } from "zod";
 
 const booleanFromEnv = z.preprocess((value) => {
   if (typeof value === "boolean") return value;
-  if (typeof value !== "string") return false;
-  return ["1", "true", "yes", "on"].includes(value.toLowerCase());
+  if (typeof value !== "string") return value;
+  const normalized = value.trim().toLowerCase();
+  if (["1", "true", "yes", "on"].includes(normalized)) return true;
+  if (["0", "false", "no", "off"].includes(normalized)) return false;
+  // Invalid values must fail validation, not silently enable live sending.
+  return value;
 }, z.boolean());
 
 const envSchema = z.object({
