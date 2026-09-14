@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #f3eee4;
+  --ink: #1f1a14;
+  --muted: #5c5348;
+  --line: #d9cfc0;
+  --copper: #9a3412;
+  --copper-soft: #c2410c;
+  --navy: #172033;
+  --good: #166534;
+  --warn: #92400e;
+  --bad: #9f1239;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-copper: var(--copper);
+  --color-navy: var(--navy);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.rr-card {
+  background: #fffdf8;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 1px 0 rgba(31, 26, 20, 0.04);
+}
+
+.rr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.rr-btn-primary {
+  background: var(--copper);
+  color: white;
+}
+
+.rr-btn-primary:hover {
+  background: var(--copper-soft);
+}
+
+.rr-btn-ghost {
+  background: transparent;
+  border: 1px solid var(--line);
+}
+
+.rr-btn-danger {
+  background: #9f1239;
+  color: white;
+}

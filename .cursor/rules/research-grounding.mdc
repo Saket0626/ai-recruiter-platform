@@ -1,0 +1,14 @@
+---
+description: Never invent professor research or student experience
+alwaysApply: true
+---
+
+# Research grounding
+
+Never invent professor research. Every professor claim must be supported by a page the application actually retrieved. Store the supporting URL.
+
+If evidence is insufficient, mark the professor `INSUFFICIENT_EVIDENCE` and do not generate or send an email.
+
+Never invent student experience. Accomplishments must come from the uploaded resume or explicit student-profile fields. Do not upgrade "helped" into "built" or "contributed" into "created".
+
+If uncertain, skip the professor rather than hallucinating information.

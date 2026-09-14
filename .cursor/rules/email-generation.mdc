@@ -1,0 +1,15 @@
+---
+description: Email generation, validation, and sending gates
+globs: lib/email/**/*.ts
+alwaysApply: false
+---
+
+# Email generation
+
+Every outbound email must pass validation. Every personalized professor claim needs stored supporting evidence.
+
+Personalization must change the opening paragraph, the research-interest paragraph, and the internal relevance explanation. Do not only swap the professor name.
+
+Do not mention relevance scores, URLs, or citations in the email body. Do not use em dashes. Do not claim the student read a paper unless that evidence exists.
+
+Review Mode is the default. Autopilot may send only when every quality gate passes.

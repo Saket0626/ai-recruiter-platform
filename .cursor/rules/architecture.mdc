@@ -1,0 +1,19 @@
+---
+description: ResearchReach architecture and module boundaries
+alwaysApply: true
+---
+
+# Architecture
+
+Keep authentication, discovery, research analysis, email generation, sending, and database access in separate modules under `lib/`.
+
+Provider interfaces live in:
+
+- `lib/search/provider.ts` (`SearchProvider`)
+- `lib/llm/provider.ts` (`LLMProvider`)
+- `lib/research/provider.ts` (`ProfessorResearchProvider`)
+- `lib/email/provider.ts` (`EmailProvider`)
+
+Do not collapse those concerns into giant files. UI pages must not call Microsoft Graph, crawl the web, or invoke LLMs directly. Route handlers and server-only services own those side effects.
+
+Prefer replaceable providers over hard-coding OpenAI, Tavily, or Graph SDK details in feature code.

@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Professor {
+  id                         String   @id @default(cuid())
+  firstName                  String
+  lastName                   String
+  fullName                   String
+  title                      String?
+  department                 String?
+  university                 String
+  email                      String?
+  emailNormalized            String?
+  emailSourceUrl             String?
+  facultyPageUrl             String?
+  facultyPageUrlNormalized   String?
+  labUrl                     String?
+  personalWebsite            String?
+  researchTopics             String   @default("[]")
+  researchSummary            String?
+  currentProjects            String   @default("[]")
+  relevanceScore             Int?
+  relevanceExplanation       String?
+  scoringFactors             String   @default("{}")
+  status                     String
+  insufficientEvidence       Boolean  @default(false)
+  genericInbox               Boolean  @default(false)
+  identityKey                String   @unique
+  lastContactedAt            DateTime?
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  evidence ResearchEvidence[]
+  drafts   EmailDraft[]
+  sends    EmailSend[]
+
+  @@index([emailNormalized])
+  @@index([facultyPageUrlNormalized])
+  @@index([university, fullName])
+  @@index([status])
+}
+
+model ResearchEvidence {
+  id             String   @id @default(cuid())
+  professorId    String
+  url            String
+  title          String?
+  extractedText  String
+  claim          String
+  sourcePriority Int
+  retrievedAt    DateTime @default(now())
+  professor      Professor @relation(fields: [professorId], references: [id], onDelete: Cascade)
+
+  @@index([professorId])
+}
+
+model EmailDraft {
+  id                 String    @id @default(cuid())
+  professorId        String
+  discoveryRunId     String?
+  subject            String
+  body               String
+  status             String
+  validationErrors   String    @default("[]")
+  validationPassed   Boolean   @default(false)
+  personalizedTopics String    @default("[]")
+  studentClaims      String    @default("[]")
+  failureReason      String?
+  createdAt          DateTime  @default(now())
+  approvedAt         DateTime?
+  rejectedAt         DateTime?
+  sentAt             DateTime?
+  professor          Professor     @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  discoveryRun       DiscoveryRun? @relation(fields: [discoveryRunId], references: [id], onDelete: SetNull)
+  sends              EmailSend[]
+
+  @@index([status])
+  @@index([professorId])
+}
+
+model EmailSend {
+  id                  String    @id @default(cuid())
+  professorId         String
+  draftId             String
+  recipient           String
+  recipientNormalized String
+  subject             String
+  body                String
+  status              String
+  failureReason       String?
+  graphStatus         String?
+  dryRun              Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  sentAt              DateTime?
+  professor           Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  draft               EmailDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+
+  @@index([recipientNormalized, sentAt])
+  @@index([status])
+}
+
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model DiscoveryRun {
+  id                String   @id @default(cuid())
+  university        String
+  universitiesJson  String   @default("[]")
+  department        String?
+  universityDomain  String?
+  seedUrls          String   @default("[]")
+  researchInterests String   @default("[]")
+  maxCandidates     Int
+  minScore          Int
+  status            String
+  currentStage      String
+  progressJson      String   @default("{}")
+  errorMessage      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  drafts            EmailDraft[]
+}
+
+model PageCache {
+  url         String   @id
+  contentType String?
+  body        String
+  statusCode  Int
+  fetchedAt   DateTime @default(now())
+}
+
+model AuthAccount {
+  id            String   @id @default("default")
+  homeAccountId String?
+  username      String?
+  name          String?
+  tokenCache    String   @default("")
+  updatedAt     DateTime @updatedAt
+}

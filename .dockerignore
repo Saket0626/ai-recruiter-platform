@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.env
+.env.local
+data/resume.pdf
+prisma/dev.db
+*.md
+!README.md

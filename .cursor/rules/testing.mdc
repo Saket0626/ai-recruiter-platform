@@ -1,0 +1,13 @@
+---
+description: Testing standards for ResearchReach
+globs: tests/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Testing
+
+Never silently weaken tests. Never delete tests simply to make the build pass.
+
+Microsoft Graph must be mocked in automated tests. Tests must never send a real email.
+
+If a test fails because production code is wrong, fix the production code. If a test is invalid, replace it with a stronger test that still covers the original risk.

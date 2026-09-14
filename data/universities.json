@@ -1,0 +1,2402 @@
+[
+  {
+    "name": "Princeton University",
+    "shortName": "Princeton",
+    "aliases": [],
+    "domain": "princeton.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.princeton.edu/people/faculty"
+    ],
+    "nationalRank": 1,
+    "inTop100": true
+  },
+  {
+    "name": "Massachusetts Institute of Technology",
+    "shortName": "MIT",
+    "aliases": [
+      "MIT"
+    ],
+    "domain": "mit.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.eecs.mit.edu/people/faculty/"
+    ],
+    "nationalRank": 2,
+    "inTop100": true
+  },
+  {
+    "name": "Harvard University",
+    "shortName": "Harvard",
+    "aliases": [
+      "Harvard"
+    ],
+    "domain": "harvard.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.seas.harvard.edu/computer-science/people"
+    ],
+    "nationalRank": 3,
+    "inTop100": true
+  },
+  {
+    "name": "Stanford University",
+    "shortName": "Stanford",
+    "aliases": [
+      "Stanford"
+    ],
+    "domain": "stanford.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.stanford.edu/people/faculty"
+    ],
+    "nationalRank": 4,
+    "inTop100": true
+  },
+  {
+    "name": "Yale University",
+    "shortName": "Yale",
+    "aliases": [
+      "Yale"
+    ],
+    "domain": "yale.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cpsc.yale.edu/people/faculty"
+    ],
+    "nationalRank": 4,
+    "inTop100": true
+  },
+  {
+    "name": "University of Chicago",
+    "shortName": "UChicago",
+    "aliases": [],
+    "domain": "uchicago.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.uchicago.edu/people/faculty/"
+    ],
+    "nationalRank": 6,
+    "inTop100": true
+  },
+  {
+    "name": "Duke University",
+    "shortName": "Duke",
+    "aliases": [
+      "Duke"
+    ],
+    "domain": "duke.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.duke.edu/people/faculty"
+    ],
+    "nationalRank": 7,
+    "inTop100": true
+  },
+  {
+    "name": "Johns Hopkins University",
+    "shortName": "JHU",
+    "aliases": [
+      "Johns Hopkins",
+      "Hopkins"
+    ],
+    "domain": "jhu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.jhu.edu/people/faculty/"
+    ],
+    "nationalRank": 7,
+    "inTop100": true
+  },
+  {
+    "name": "Northwestern University",
+    "shortName": "Northwestern",
+    "aliases": [],
+    "domain": "northwestern.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.mccormick.northwestern.edu/computer-science/people/faculty.html"
+    ],
+    "nationalRank": 7,
+    "inTop100": true
+  },
+  {
+    "name": "University of Pennsylvania",
+    "shortName": "Penn",
+    "aliases": [
+      "UPenn",
+      "Penn"
+    ],
+    "domain": "upenn.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cis.upenn.edu/people/faculty/"
+    ],
+    "nationalRank": 7,
+    "inTop100": true
+  },
+  {
+    "name": "California Institute of Technology",
+    "shortName": "Caltech",
+    "aliases": [
+      "Caltech"
+    ],
+    "domain": "caltech.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cms.caltech.edu/people"
+    ],
+    "nationalRank": 11,
+    "inTop100": true
+  },
+  {
+    "name": "Cornell University",
+    "shortName": "Cornell",
+    "aliases": [],
+    "domain": "cornell.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.cornell.edu/people/faculty"
+    ],
+    "nationalRank": 12,
+    "inTop100": true
+  },
+  {
+    "name": "Brown University",
+    "shortName": "Brown",
+    "aliases": [],
+    "domain": "brown.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.brown.edu/people/faculty/"
+    ],
+    "nationalRank": 13,
+    "inTop100": true
+  },
+  {
+    "name": "Dartmouth College",
+    "shortName": "Dartmouth",
+    "aliases": [],
+    "domain": "dartmouth.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://web.cs.dartmouth.edu/people"
+    ],
+    "nationalRank": 13,
+    "inTop100": true
+  },
+  {
+    "name": "Columbia University",
+    "shortName": "Columbia",
+    "aliases": [],
+    "domain": "columbia.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.columbia.edu/people/faculty/"
+    ],
+    "nationalRank": 15,
+    "inTop100": true
+  },
+  {
+    "name": "University of California, Berkeley",
+    "shortName": "UC Berkeley",
+    "aliases": [
+      "Berkeley",
+      "Cal"
+    ],
+    "domain": "berkeley.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www2.eecs.berkeley.edu/Faculty/Lists/faculty.html"
+    ],
+    "nationalRank": 15,
+    "inTop100": true
+  },
+  {
+    "name": "Rice University",
+    "shortName": "Rice",
+    "aliases": [],
+    "domain": "rice.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.rice.edu/people/faculty"
+    ],
+    "nationalRank": 17,
+    "inTop100": true
+  },
+  {
+    "name": "University of California, Los Angeles",
+    "shortName": "UCLA",
+    "aliases": [
+      "UCLA"
+    ],
+    "domain": "ucla.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.ucla.edu/people/faculty/"
+    ],
+    "nationalRank": 17,
+    "inTop100": true
+  },
+  {
+    "name": "Vanderbilt University",
+    "shortName": "Vanderbilt",
+    "aliases": [],
+    "domain": "vanderbilt.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical and Computer Engineering",
+      "Information Systems"
+    ],
+    "facultyDirectories": [
+      "https://engineering.vanderbilt.edu/eecs/faculty/"
+    ],
+    "nationalRank": 17,
+    "inTop100": true
+  },
+  {
+    "name": "Carnegie Mellon University",
+    "shortName": "CMU",
+    "aliases": [
+      "CMU",
+      "Carnegie Mellon"
+    ],
+    "domain": "cmu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://csd.cmu.edu/directory/faculty"
+    ],
+    "nationalRank": 20,
+    "inTop100": true
+  },
+  {
+    "name": "University of Michigan",
+    "shortName": "Michigan",
+    "aliases": [
+      "UMich",
+      "Michigan"
+    ],
+    "domain": "umich.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cse.engin.umich.edu/people/faculty/"
+    ],
+    "nationalRank": 20,
+    "inTop100": true
+  },
+  {
+    "name": "University of Notre Dame",
+    "shortName": "Notre Dame",
+    "aliases": [],
+    "domain": "nd.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cse.nd.edu/faculty/"
+    ],
+    "nationalRank": 20,
+    "inTop100": true
+  },
+  {
+    "name": "Washington University in St. Louis",
+    "shortName": "WashU",
+    "aliases": [
+      "WashU",
+      "WUSTL"
+    ],
+    "domain": "wustl.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cse.wustl.edu/faculty/index.html"
+    ],
+    "nationalRank": 20,
+    "inTop100": true
+  },
+  {
+    "name": "Emory University",
+    "shortName": "Emory",
+    "aliases": [],
+    "domain": "emory.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://computerscience.emory.edu/people/faculty.html"
+    ],
+    "nationalRank": 24,
+    "inTop100": true
+  },
+  {
+    "name": "Georgetown University",
+    "shortName": "Georgetown",
+    "aliases": [],
+    "domain": "georgetown.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.georgetown.edu/people/faculty/"
+    ],
+    "nationalRank": 24,
+    "inTop100": true
+  },
+  {
+    "name": "University of North Carolina at Chapel Hill",
+    "shortName": "UNC",
+    "aliases": [
+      "UNC",
+      "UNC Chapel Hill"
+    ],
+    "domain": "unc.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.unc.edu/people/faculty/"
+    ],
+    "nationalRank": 26,
+    "inTop100": true
+  },
+  {
+    "name": "University of Virginia",
+    "shortName": "UVA",
+    "aliases": [
+      "UVA"
+    ],
+    "domain": "virginia.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://engineering.virginia.edu/department/computer-science/faculty"
+    ],
+    "nationalRank": 26,
+    "inTop100": true
+  },
+  {
+    "name": "University of Southern California",
+    "shortName": "USC",
+    "aliases": [
+      "USC"
+    ],
+    "domain": "usc.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.usc.edu/directory/faculty/"
+    ],
+    "nationalRank": 28,
+    "inTop100": true
+  },
+  {
+    "name": "University of California, San Diego",
+    "shortName": "UCSD",
+    "aliases": [
+      "UCSD",
+      "UC San Diego"
+    ],
+    "domain": "ucsd.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cse.ucsd.edu/people/faculty"
+    ],
+    "nationalRank": 29,
+    "inTop100": true
+  },
+  {
+    "name": "University of Florida",
+    "shortName": "UF",
+    "aliases": [
+      "UF"
+    ],
+    "domain": "ufl.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cise.ufl.edu/people/faculty/"
+    ],
+    "nationalRank": 30,
+    "inTop100": true
+  },
+  {
+    "name": "University of Texas at Austin",
+    "shortName": "UT Austin",
+    "aliases": [
+      "UT Austin",
+      "Texas"
+    ],
+    "domain": "utexas.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.utexas.edu/people/faculty-researchers"
+    ],
+    "nationalRank": 30,
+    "inTop100": true
+  },
+  {
+    "name": "Georgia Institute of Technology",
+    "shortName": "Georgia Tech",
+    "aliases": [
+      "Georgia Tech",
+      "GT"
+    ],
+    "domain": "gatech.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cc.gatech.edu/people/faculty"
+    ],
+    "nationalRank": 32,
+    "inTop100": true
+  },
+  {
+    "name": "New York University",
+    "shortName": "NYU",
+    "aliases": [
+      "NYU"
+    ],
+    "domain": "nyu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.nyu.edu/home/people/faculty.html"
+    ],
+    "nationalRank": 32,
+    "inTop100": true
+  },
+  {
+    "name": "University of California, Davis",
+    "shortName": "UC Davis",
+    "aliases": [],
+    "domain": "ucdavis.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.ucdavis.edu/directory/faculty"
+    ],
+    "nationalRank": 32,
+    "inTop100": true
+  },
+  {
+    "name": "University of California, Irvine",
+    "shortName": "UC Irvine",
+    "aliases": [
+      "UCI"
+    ],
+    "domain": "uci.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.uci.edu/faculty/"
+    ],
+    "nationalRank": 32,
+    "inTop100": true
+  },
+  {
+    "name": "Boston College",
+    "shortName": "BC",
+    "aliases": [],
+    "domain": "bc.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.bc.edu/bc-web/schools/mcas/departments/computer-science/people/faculty.html"
+    ],
+    "nationalRank": 36,
+    "inTop100": true
+  },
+  {
+    "name": "Tufts University",
+    "shortName": "Tufts",
+    "aliases": [],
+    "domain": "tufts.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://engineering.tufts.edu/cs/people/faculty"
+    ],
+    "nationalRank": 36,
+    "inTop100": true
+  },
+  {
+    "name": "University of Illinois Urbana-Champaign",
+    "shortName": "UIUC",
+    "aliases": [
+      "UIUC",
+      "Illinois"
+    ],
+    "domain": "illinois.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.illinois.edu/about/people/faculty"
+    ],
+    "nationalRank": 36,
+    "inTop100": true
+  },
+  {
+    "name": "University of Wisconsin-Madison",
+    "shortName": "Wisconsin",
+    "aliases": [
+      "UW Madison"
+    ],
+    "domain": "wisc.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.wisc.edu/people/faculty/"
+    ],
+    "nationalRank": 36,
+    "inTop100": true
+  },
+  {
+    "name": "University of California, Santa Barbara",
+    "shortName": "UCSB",
+    "aliases": [
+      "UCSB"
+    ],
+    "domain": "ucsb.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.ucsb.edu/people/faculty"
+    ],
+    "nationalRank": 40,
+    "inTop100": true
+  },
+  {
+    "name": "The Ohio State University",
+    "shortName": "Ohio State",
+    "aliases": [
+      "Ohio State"
+    ],
+    "domain": "osu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cse.osu.edu/people/faculty"
+    ],
+    "nationalRank": 41,
+    "inTop100": true
+  },
+  {
+    "name": "Boston University",
+    "shortName": "BU",
+    "aliases": [
+      "BU"
+    ],
+    "domain": "bu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.bu.edu/cs/people/faculty/"
+    ],
+    "nationalRank": 42,
+    "inTop100": true
+  },
+  {
+    "name": "Rutgers University",
+    "shortName": "Rutgers",
+    "aliases": [],
+    "domain": "rutgers.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.rutgers.edu/people/professors"
+    ],
+    "nationalRank": 42,
+    "inTop100": true
+  },
+  {
+    "name": "University of Maryland",
+    "shortName": "Maryland",
+    "aliases": [
+      "UMD"
+    ],
+    "domain": "umd.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.umd.edu/people/faculty"
+    ],
+    "nationalRank": 42,
+    "inTop100": true
+  },
+  {
+    "name": "University of Washington",
+    "shortName": "UW",
+    "aliases": [
+      "UW Seattle"
+    ],
+    "domain": "washington.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.washington.edu/people/faculty"
+    ],
+    "nationalRank": 42,
+    "inTop100": true
+  },
+  {
+    "name": "Lehigh University",
+    "shortName": "Lehigh",
+    "aliases": [],
+    "domain": "lehigh.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://engineering.lehigh.edu/cse/faculty"
+    ],
+    "nationalRank": 46,
+    "inTop100": true
+  },
+  {
+    "name": "Northeastern University",
+    "shortName": "Northeastern",
+    "aliases": [],
+    "domain": "northeastern.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.khoury.northeastern.edu/people/"
+    ],
+    "nationalRank": 46,
+    "inTop100": true
+  },
+  {
+    "name": "Purdue University",
+    "shortName": "Purdue",
+    "aliases": [],
+    "domain": "purdue.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.purdue.edu/people/faculty/index.html"
+    ],
+    "nationalRank": 46,
+    "inTop100": true
+  },
+  {
+    "name": "University of Georgia",
+    "shortName": "UGA",
+    "aliases": [
+      "UGA"
+    ],
+    "domain": "uga.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.uga.edu/directory/faculty"
+    ],
+    "nationalRank": 46,
+    "inTop100": true
+  },
+  {
+    "name": "University of Rochester",
+    "shortName": "Rochester",
+    "aliases": [],
+    "domain": "rochester.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.rochester.edu/people/faculty/index.html"
+    ],
+    "nationalRank": 46,
+    "inTop100": true
+  },
+  {
+    "name": "Case Western Reserve University",
+    "shortName": "Case Western",
+    "aliases": [
+      "CWRU"
+    ],
+    "domain": "case.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical and Computer Engineering",
+      "Information Systems"
+    ],
+    "facultyDirectories": [
+      "https://engineering.case.edu/computer-and-data-sciences/research/faculty"
+    ],
+    "nationalRank": 51,
+    "inTop100": true
+  },
+  {
+    "name": "College of William & Mary",
+    "shortName": "William & Mary",
+    "aliases": [
+      "W&M"
+    ],
+    "domain": "wm.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.wm.edu/people/faculty/index.php"
+    ],
+    "nationalRank": 51,
+    "inTop100": true
+  },
+  {
+    "name": "Tulane University",
+    "shortName": "Tulane",
+    "aliases": [],
+    "domain": "tulane.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://sse.tulane.edu/cs/faculty"
+    ],
+    "nationalRank": 51,
+    "inTop100": true
+  },
+  {
+    "name": "Florida State University",
+    "shortName": "FSU",
+    "aliases": [
+      "FSU"
+    ],
+    "domain": "fsu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.fsu.edu/people/faculty/"
+    ],
+    "nationalRank": 54,
+    "inTop100": true
+  },
+  {
+    "name": "University of Connecticut",
+    "shortName": "UConn",
+    "aliases": [
+      "UConn"
+    ],
+    "domain": "uconn.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cse.uconn.edu/people/faculty/"
+    ],
+    "nationalRank": 54,
+    "inTop100": true
+  },
+  {
+    "name": "University of Minnesota",
+    "shortName": "Minnesota",
+    "aliases": [
+      "UMN"
+    ],
+    "domain": "umn.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cse.umn.edu/cs/faculty"
+    ],
+    "nationalRank": 54,
+    "inTop100": true
+  },
+  {
+    "name": "Villanova University",
+    "shortName": "Villanova",
+    "aliases": [],
+    "domain": "villanova.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www1.villanova.edu/university/engineering/departments/computing-sciences/faculty.html"
+    ],
+    "nationalRank": 54,
+    "inTop100": true
+  },
+  {
+    "name": "Pennsylvania State University",
+    "shortName": "Penn State",
+    "aliases": [
+      "Penn State"
+    ],
+    "domain": "psu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical and Computer Engineering",
+      "Information Systems"
+    ],
+    "facultyDirectories": [
+      "https://www.eecs.psu.edu/departments/CSE-Department-Faculty-List.aspx"
+    ],
+    "nationalRank": 60,
+    "inTop100": true
+  },
+  {
+    "name": "Southern Methodist University",
+    "shortName": "SMU",
+    "aliases": [
+      "SMU"
+    ],
+    "domain": "smu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.smu.edu/lyle/departments/cs/people/faculty"
+    ],
+    "nationalRank": 60,
+    "inTop100": true
+  },
+  {
+    "name": "University of Massachusetts Amherst",
+    "shortName": "UMass",
+    "aliases": [
+      "UMass"
+    ],
+    "domain": "umass.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cics.umass.edu/about/directory/faculty"
+    ],
+    "nationalRank": 60,
+    "inTop100": true
+  },
+  {
+    "name": "Fordham University",
+    "shortName": "Fordham",
+    "aliases": [],
+    "domain": "fordham.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.fordham.edu/academics/departments/computer-and-information-science/faculty/"
+    ],
+    "nationalRank": 61,
+    "inTop100": true
+  },
+  {
+    "name": "George Washington University",
+    "shortName": "GW",
+    "aliases": [
+      "GWU"
+    ],
+    "domain": "gwu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.seas.gwu.edu/faculty"
+    ],
+    "nationalRank": 61,
+    "inTop100": true
+  },
+  {
+    "name": "Syracuse University",
+    "shortName": "Syracuse",
+    "aliases": [],
+    "domain": "syracuse.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://ecs.syracuse.edu/faculty-staff"
+    ],
+    "nationalRank": 61,
+    "inTop100": true
+  },
+  {
+    "name": "University of Miami",
+    "shortName": "Miami",
+    "aliases": [],
+    "domain": "miami.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.miami.edu/people/faculty/"
+    ],
+    "nationalRank": 61,
+    "inTop100": true
+  },
+  {
+    "name": "Wake Forest University",
+    "shortName": "Wake Forest",
+    "aliases": [],
+    "domain": "wfu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.wfu.edu/people/faculty/"
+    ],
+    "nationalRank": 61,
+    "inTop100": true
+  },
+  {
+    "name": "Brandeis University",
+    "shortName": "Brandeis",
+    "aliases": [],
+    "domain": "brandeis.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.brandeis.edu/computer-science/people/faculty.html"
+    ],
+    "nationalRank": 66,
+    "inTop100": true
+  },
+  {
+    "name": "Rensselaer Polytechnic Institute",
+    "shortName": "RPI",
+    "aliases": [
+      "RPI"
+    ],
+    "domain": "rpi.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://science.rpi.edu/computer-science/faculty"
+    ],
+    "nationalRank": 66,
+    "inTop100": true
+  },
+  {
+    "name": "Texas A&M University",
+    "shortName": "Texas A&M",
+    "aliases": [
+      "TAMU"
+    ],
+    "domain": "tamu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical and Computer Engineering",
+      "Information Systems"
+    ],
+    "facultyDirectories": [
+      "https://engineering.tamu.edu/cse/profiles/index.html"
+    ],
+    "nationalRank": 68,
+    "inTop100": true
+  },
+  {
+    "name": "University of Pittsburgh",
+    "shortName": "Pitt",
+    "aliases": [],
+    "domain": "pitt.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.pitt.edu/people/faculty"
+    ],
+    "nationalRank": 68,
+    "inTop100": true
+  },
+  {
+    "name": "Virginia Tech",
+    "shortName": "Virginia Tech",
+    "aliases": [
+      "VT"
+    ],
+    "domain": "vt.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.vt.edu/people/faculty.html"
+    ],
+    "nationalRank": 68,
+    "inTop100": true
+  },
+  {
+    "name": "Stony Brook University",
+    "shortName": "Stony Brook",
+    "aliases": [],
+    "domain": "stonybrook.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.stonybrook.edu/people/faculty"
+    ],
+    "nationalRank": 72,
+    "inTop100": true
+  },
+  {
+    "name": "Indiana University Bloomington",
+    "shortName": "Indiana",
+    "aliases": [
+      "IU"
+    ],
+    "domain": "indiana.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.luddy.indiana.edu/people/faculty.html"
+    ],
+    "nationalRank": 73,
+    "inTop100": true
+  },
+  {
+    "name": "Michigan State University",
+    "shortName": "Michigan State",
+    "aliases": [
+      "MSU"
+    ],
+    "domain": "msu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cse.msu.edu/People/Faculty"
+    ],
+    "nationalRank": 73,
+    "inTop100": true
+  },
+  {
+    "name": "North Carolina State University",
+    "shortName": "NC State",
+    "aliases": [
+      "NCSU"
+    ],
+    "domain": "ncsu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.csc.ncsu.edu/directories/faculty.php"
+    ],
+    "nationalRank": 75,
+    "inTop100": true
+  },
+  {
+    "name": "Pepperdine University",
+    "shortName": "Pepperdine",
+    "aliases": [],
+    "domain": "pepperdine.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://seaver.pepperdine.edu/natural-science/undergraduate/computer-science/faculty.htm"
+    ],
+    "nationalRank": 76,
+    "inTop100": true
+  },
+  {
+    "name": "University of Denver",
+    "shortName": "Denver",
+    "aliases": [],
+    "domain": "du.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://ritchieschool.du.edu/about/faculty-directory"
+    ],
+    "nationalRank": 76,
+    "inTop100": true
+  },
+  {
+    "name": "American University",
+    "shortName": "American",
+    "aliases": [],
+    "domain": "american.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.american.edu/cas/cs/faculty.cfm"
+    ],
+    "nationalRank": 78,
+    "inTop100": true
+  },
+  {
+    "name": "Baylor University",
+    "shortName": "Baylor",
+    "aliases": [
+      "Baylor"
+    ],
+    "domain": "baylor.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.ecs.baylor.edu/faculty",
+      "https://www.ecs.baylor.edu/computer-science/faculty"
+    ],
+    "nationalRank": 80,
+    "inTop100": true
+  },
+  {
+    "name": "Texas Christian University",
+    "shortName": "TCU",
+    "aliases": [
+      "TCU"
+    ],
+    "domain": "tcu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://engineering.tcu.edu/computer-science/faculty"
+    ],
+    "nationalRank": 80,
+    "inTop100": true
+  },
+  {
+    "name": "Stevens Institute of Technology",
+    "shortName": "Stevens",
+    "aliases": [],
+    "domain": "stevens.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.stevens.edu/school-engineering-science/departments/computer-science/faculty"
+    ],
+    "nationalRank": 82,
+    "inTop100": true
+  },
+  {
+    "name": "Worcester Polytechnic Institute",
+    "shortName": "WPI",
+    "aliases": [
+      "WPI"
+    ],
+    "domain": "wpi.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.wpi.edu/academics/departments/computer-science/faculty"
+    ],
+    "nationalRank": 82,
+    "inTop100": true
+  },
+  {
+    "name": "Yeshiva University",
+    "shortName": "Yeshiva",
+    "aliases": [
+      "YU"
+    ],
+    "domain": "yu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.yu.edu/katz/faculty"
+    ],
+    "nationalRank": 82,
+    "inTop100": true
+  },
+  {
+    "name": "Brigham Young University",
+    "shortName": "BYU",
+    "aliases": [
+      "BYU"
+    ],
+    "domain": "byu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.byu.edu/people/faculty/"
+    ],
+    "nationalRank": 85,
+    "inTop100": true
+  },
+  {
+    "name": "University of Colorado Boulder",
+    "shortName": "CU Boulder",
+    "aliases": [
+      "CU Boulder"
+    ],
+    "domain": "colorado.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.colorado.edu/cs/people/faculty"
+    ],
+    "nationalRank": 85,
+    "inTop100": true
+  },
+  {
+    "name": "Arizona State University",
+    "shortName": "ASU",
+    "aliases": [
+      "ASU"
+    ],
+    "domain": "asu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://search.asu.edu/profile/faculty"
+    ],
+    "nationalRank": 87,
+    "inTop100": true
+  },
+  {
+    "name": "University of Arizona",
+    "shortName": "Arizona",
+    "aliases": [],
+    "domain": "arizona.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.arizona.edu/people/faculty"
+    ],
+    "nationalRank": 87,
+    "inTop100": true
+  },
+  {
+    "name": "University of Iowa",
+    "shortName": "Iowa",
+    "aliases": [],
+    "domain": "uiowa.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.uiowa.edu/people/faculty"
+    ],
+    "nationalRank": 89,
+    "inTop100": true
+  },
+  {
+    "name": "University of Delaware",
+    "shortName": "Delaware",
+    "aliases": [],
+    "domain": "udel.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cis.udel.edu/people/faculty/"
+    ],
+    "nationalRank": 90,
+    "inTop100": true
+  },
+  {
+    "name": "Drexel University",
+    "shortName": "Drexel",
+    "aliases": [],
+    "domain": "drexel.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://drexel.edu/cci/academics/computer-science-department/faculty/"
+    ],
+    "nationalRank": 91,
+    "inTop100": true
+  },
+  {
+    "name": "Howard University",
+    "shortName": "Howard",
+    "aliases": [],
+    "domain": "howard.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical and Computer Engineering",
+      "Information Systems"
+    ],
+    "facultyDirectories": [
+      "https://cea.howard.edu/departments/electrical-engineering-and-computer-science/faculty"
+    ],
+    "nationalRank": 92,
+    "inTop100": true
+  },
+  {
+    "name": "Clemson University",
+    "shortName": "Clemson",
+    "aliases": [],
+    "domain": "clemson.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.clemson.edu/people/faculty/"
+    ],
+    "nationalRank": 93,
+    "inTop100": true
+  },
+  {
+    "name": "University of South Carolina",
+    "shortName": "South Carolina",
+    "aliases": [],
+    "domain": "sc.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://sc.edu/study/colleges_schools/engineering_and_computing/departments/computer_science_and_engineering/our_people/faculty.php"
+    ],
+    "nationalRank": 93,
+    "inTop100": true
+  },
+  {
+    "name": "Auburn University",
+    "shortName": "Auburn",
+    "aliases": [],
+    "domain": "auburn.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.eng.auburn.edu/comp/faculty/"
+    ],
+    "nationalRank": 95,
+    "inTop100": true
+  },
+  {
+    "name": "University of Alabama",
+    "shortName": "Alabama",
+    "aliases": [],
+    "domain": "ua.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.ua.edu/people/faculty/"
+    ],
+    "nationalRank": 96,
+    "inTop100": true
+  },
+  {
+    "name": "University of Tennessee",
+    "shortName": "Tennessee",
+    "aliases": [
+      "UTK"
+    ],
+    "domain": "utk.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical and Computer Engineering",
+      "Information Systems"
+    ],
+    "facultyDirectories": [
+      "https://eecs.utk.edu/people/faculty/"
+    ],
+    "nationalRank": 97,
+    "inTop100": true
+  },
+  {
+    "name": "University of Kentucky",
+    "shortName": "Kentucky",
+    "aliases": [],
+    "domain": "uky.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.uky.edu/people/faculty"
+    ],
+    "nationalRank": 98,
+    "inTop100": true
+  },
+  {
+    "name": "University of Kansas",
+    "shortName": "Kansas",
+    "aliases": [
+      "KU"
+    ],
+    "domain": "ku.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical and Computer Engineering",
+      "Information Systems"
+    ],
+    "facultyDirectories": [
+      "https://eecs.ku.edu/people/faculty"
+    ],
+    "nationalRank": 99,
+    "inTop100": true
+  },
+  {
+    "name": "University of Arkansas",
+    "shortName": "Arkansas",
+    "aliases": [],
+    "domain": "uark.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://csce.uark.edu/people/faculty/"
+    ],
+    "nationalRank": 100,
+    "inTop100": true
+  },
+  {
+    "name": "University of Missouri",
+    "shortName": "Missouri",
+    "aliases": [
+      "Mizzou"
+    ],
+    "domain": "missouri.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical and Computer Engineering",
+      "Information Systems"
+    ],
+    "facultyDirectories": [
+      "https://engineering.missouri.edu/departments/eecs/eecs-faculty/"
+    ],
+    "nationalRank": 100,
+    "inTop100": true
+  },
+  {
+    "name": "University of Oklahoma",
+    "shortName": "Oklahoma",
+    "aliases": [
+      "OU"
+    ],
+    "domain": "ou.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.ou.edu/coe/cs/people/faculty"
+    ],
+    "nationalRank": 100,
+    "inTop100": true
+  },
+  {
+    "name": "Amherst College",
+    "shortName": "Amherst",
+    "aliases": [],
+    "domain": "amherst.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.amherst.edu/academiclife/departments/computer_science/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Binghamton University",
+    "shortName": "Binghamton",
+    "aliases": [],
+    "domain": "binghamton.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.binghamton.edu/computer-science/people/faculty.html"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "California Polytechnic State University",
+    "shortName": "Cal Poly",
+    "aliases": [
+      "Cal Poly SLO"
+    ],
+    "domain": "calpoly.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://csc.calpoly.edu/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Colorado School of Mines",
+    "shortName": "Mines",
+    "aliases": [],
+    "domain": "mines.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.mines.edu/project/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Colorado State University",
+    "shortName": "Colorado State",
+    "aliases": [],
+    "domain": "colostate.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.colostate.edu/people/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Florida International University",
+    "shortName": "FIU",
+    "aliases": [
+      "FIU"
+    ],
+    "domain": "fiu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cis.fiu.edu/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "George Mason University",
+    "shortName": "George Mason",
+    "aliases": [
+      "GMU"
+    ],
+    "domain": "gmu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.gmu.edu/directory/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Harvey Mudd College",
+    "shortName": "Harvey Mudd",
+    "aliases": [
+      "HMC"
+    ],
+    "domain": "hmc.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.hmc.edu/people/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Illinois Institute of Technology",
+    "shortName": "Illinois Tech",
+    "aliases": [
+      "Illinois Tech"
+    ],
+    "domain": "iit.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.iit.edu/computer-science/people/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Iowa State University",
+    "shortName": "Iowa State",
+    "aliases": [],
+    "domain": "iastate.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.iastate.edu/people/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Louisiana State University",
+    "shortName": "LSU",
+    "aliases": [
+      "LSU"
+    ],
+    "domain": "lsu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.lsu.edu/eng/cse/people/faculty.php"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "New Jersey Institute of Technology",
+    "shortName": "NJIT",
+    "aliases": [
+      "NJIT"
+    ],
+    "domain": "njit.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://computing.njit.edu/people/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Oregon State University",
+    "shortName": "Oregon State",
+    "aliases": [],
+    "domain": "oregonstate.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical and Computer Engineering",
+      "Information Systems"
+    ],
+    "facultyDirectories": [
+      "https://eecs.oregonstate.edu/people/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Rochester Institute of Technology",
+    "shortName": "RIT",
+    "aliases": [
+      "RIT"
+    ],
+    "domain": "rit.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.rit.edu/gccis/people/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "San Diego State University",
+    "shortName": "SDSU",
+    "aliases": [
+      "SDSU"
+    ],
+    "domain": "sdsu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://computer.sdsu.edu/people/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Santa Clara University",
+    "shortName": "Santa Clara",
+    "aliases": [],
+    "domain": "scu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.scu.edu/engineering/faculty/computer-science-and-engineering/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Swarthmore College",
+    "shortName": "Swarthmore",
+    "aliases": [],
+    "domain": "swarthmore.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.swarthmore.edu/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Temple University",
+    "shortName": "Temple",
+    "aliases": [],
+    "domain": "temple.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cis.temple.edu/people/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University at Buffalo",
+    "shortName": "Buffalo",
+    "aliases": [
+      "UB"
+    ],
+    "domain": "buffalo.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://engineering.buffalo.edu/computer-science-engineering/people/faculty-directory.html"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of California, Merced",
+    "shortName": "UC Merced",
+    "aliases": [],
+    "domain": "ucmerced.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://engineering.ucmerced.edu/people/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of California, Riverside",
+    "shortName": "UC Riverside",
+    "aliases": [
+      "UCR"
+    ],
+    "domain": "ucr.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www1.cs.ucr.edu/people/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of California, Santa Cruz",
+    "shortName": "UC Santa Cruz",
+    "aliases": [
+      "UCSC"
+    ],
+    "domain": "ucsc.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.soe.ucsc.edu/people/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of Central Florida",
+    "shortName": "UCF",
+    "aliases": [
+      "UCF"
+    ],
+    "domain": "ucf.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.ucf.edu/people/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of Cincinnati",
+    "shortName": "Cincinnati",
+    "aliases": [],
+    "domain": "uc.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://ceas.uc.edu/academics/departments/computer-science/faculty.html"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of Houston",
+    "shortName": "Houston",
+    "aliases": [
+      "UH"
+    ],
+    "domain": "uh.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.uh.edu/people/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of Illinois Chicago",
+    "shortName": "UIC",
+    "aliases": [
+      "UIC"
+    ],
+    "domain": "uic.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.uic.edu/people/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of Maryland, Baltimore County",
+    "shortName": "UMBC",
+    "aliases": [
+      "UMBC"
+    ],
+    "domain": "umbc.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.csee.umbc.edu/people/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of Nebraska-Lincoln",
+    "shortName": "Nebraska",
+    "aliases": [
+      "UNL"
+    ],
+    "domain": "unl.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://computing.unl.edu/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of Nevada, Las Vegas",
+    "shortName": "UNLV",
+    "aliases": [
+      "UNLV"
+    ],
+    "domain": "unlv.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.unlv.edu/cs/people/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of New Mexico",
+    "shortName": "UNM",
+    "aliases": [
+      "UNM"
+    ],
+    "domain": "unm.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.unm.edu/people/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of Oregon",
+    "shortName": "Oregon",
+    "aliases": [],
+    "domain": "uoregon.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.uoregon.edu/people/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of South Florida",
+    "shortName": "USF",
+    "aliases": [
+      "USF"
+    ],
+    "domain": "usf.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.usf.edu/engineering/cse/people/faculty.aspx"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of Texas at Arlington",
+    "shortName": "UT Arlington",
+    "aliases": [
+      "UTA"
+    ],
+    "domain": "uta.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.uta.edu/academics/schools-colleges/engineering/academics/departments/cse/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of Texas at Dallas",
+    "shortName": "UT Dallas",
+    "aliases": [
+      "UTD",
+      "UT Dallas"
+    ],
+    "domain": "utdallas.edu",
+    "departments": [
+      "Computer Science",
+      "Information Systems",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.utdallas.edu/people/faculty/",
+      "https://jindal.utdallas.edu/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of Texas at San Antonio",
+    "shortName": "UTSA",
+    "aliases": [
+      "UTSA"
+    ],
+    "domain": "utsa.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://cs.utsa.edu/people/faculty"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "University of Utah",
+    "shortName": "Utah",
+    "aliases": [],
+    "domain": "utah.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://www.cs.utah.edu/people/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Virginia Commonwealth University",
+    "shortName": "VCU",
+    "aliases": [
+      "VCU"
+    ],
+    "domain": "vcu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://egr.vcu.edu/departments/computer/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Washington State University",
+    "shortName": "Washington State",
+    "aliases": [
+      "WSU"
+    ],
+    "domain": "wsu.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical and Computer Engineering",
+      "Information Systems"
+    ],
+    "facultyDirectories": [
+      "https://school.eecs.wsu.edu/people/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  },
+  {
+    "name": "Williams College",
+    "shortName": "Williams",
+    "aliases": [],
+    "domain": "williams.edu",
+    "departments": [
+      "Computer Science",
+      "Electrical Engineering and Computer Science",
+      "Computer Engineering"
+    ],
+    "facultyDirectories": [
+      "https://csci.williams.edu/people/faculty/"
+    ],
+    "nationalRank": null,
+    "inTop100": false
+  }
+]
