@@ -11,6 +11,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL="postgresql://user:pass@127.0.0.1:5432/postgres"
+ENV DIRECT_URL="postgresql://user:pass@127.0.0.1:5432/postgres"
 RUN mkdir -p public
 RUN npx prisma generate
 RUN npm run build
