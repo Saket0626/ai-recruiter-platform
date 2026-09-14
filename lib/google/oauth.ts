@@ -35,7 +35,7 @@ export function buildGoogleAuthUrl(input: { state: string; nonce: string; challe
     client.generateAuthUrl({
       access_type: "offline",
       prompt: "consent select_account",
-      include_granted_scopes: false,
+      include_granted_scopes: true,
       scope: [...GOOGLE_AUTH_SCOPES],
       state: input.state,
       login_hint: env.GOOGLE_ALLOWED_EMAIL,
