@@ -1,37 +1,46 @@
 import { prisma } from "@/lib/db/prisma";
-import { getEnv } from "@/lib/config/env";
+import { getAppSettings } from "@/lib/db/settings";
 import { normalizeEmail } from "@/lib/security/email";
+import { realContactStatuses } from "@/lib/email/send-gate";
+import { cooldownActiveFrom, dailyCapReachedFromCount, jitterDelayMs } from "@/lib/email/rate-limit-policy";
+
+export { cooldownActiveFrom, dailyCapReachedFromCount, jitterDelayMs };
 
 export async function sentCountToday() {
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   return prisma.emailSend.count({
     where: {
-      sentAt: { gte: start },
-      status: { in: ["SENT", "DRY_RUN"] },
+      dryRun: false,
+      OR: [
+        { status: { in: realContactStatuses() }, sentAt: { gte: start } },
+        { status: "SUBMITTING", createdAt: { gte: start } },
+      ],
     },
   });
 }
 
 export async function dailyCapReached() {
-  const env = getEnv();
-  return (await sentCountToday()) >= env.MAX_EMAILS_PER_DAY;
+  const settings = await getAppSettings();
+  return dailyCapReachedFromCount(await sentCountToday(), settings.MAX_EMAILS_PER_DAY);
 }
 
 export async function lastSendForRecipient(email: string) {
   return prisma.emailSend.findFirst({
-    where: { recipientNormalized: normalizeEmail(email), status: { in: ["SENT", "DRY_RUN"] } },
-    orderBy: { sentAt: "desc" },
+    where: {
+      recipientNormalized: normalizeEmail(email),
+      dryRun: false,
+      OR: [{ status: { in: realContactStatuses() } }, { status: "SUBMITTING" }],
+    },
+    orderBy: { createdAt: "desc" },
   });
 }
 
 export async function isInCooldown(email: string) {
   const last = await lastSendForRecipient(email);
-  if (!last?.sentAt) return false;
-  const days = (Date.now() - last.sentAt.getTime()) / (1000 * 60 * 60 * 24);
-  return days < getEnv().PROFESSOR_COOLDOWN_DAYS;
-}
-
-export function jitterDelayMs() {
-  return 1500 + Math.floor(Math.random() * 2500);
+  if (!last) return false;
+  if (last.status === "SUBMITTING" || last.status === "UNKNOWN") return true;
+  if (!last.sentAt) return false;
+  const settings = await getAppSettings();
+  return cooldownActiveFrom(last.sentAt, settings.PROFESSOR_COOLDOWN_DAYS);
 }

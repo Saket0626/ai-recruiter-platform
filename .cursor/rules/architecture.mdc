@@ -14,6 +14,6 @@ Provider interfaces live in:
 - `lib/research/provider.ts` (`ProfessorResearchProvider`)
 - `lib/email/provider.ts` (`EmailProvider`)
 
-Do not collapse those concerns into giant files. UI pages must not call Microsoft Graph, crawl the web, or invoke LLMs directly. Route handlers and server-only services own those side effects.
+Do not collapse those concerns into giant files. UI pages must not call Gmail, crawl the web, or invoke LLMs directly. Route handlers and server-only services own those side effects.
 
-Prefer replaceable providers over hard-coding OpenAI, Tavily, or Graph SDK details in feature code.
+Prefer replaceable providers over hard-coding OpenAI, Tavily, or Gmail client details in feature code.

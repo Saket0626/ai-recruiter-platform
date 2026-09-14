@@ -102,6 +102,7 @@ model EmailSend {
   professor           Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)
   draft               EmailDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
 
+  @@index([draftId])
   @@index([recipientNormalized, sentAt])
   @@index([status])
 }
@@ -146,4 +147,17 @@ model AuthAccount {
   name          String?
   tokenCache    String   @default("")
   updatedAt     DateTime @updatedAt
+}
+
+model GoogleAuthAccount {
+  id             String   @id @default("owner")
+  ownerKey       String   @unique
+  googleSub      String
+  email          String
+  emailVerified  Boolean
+  name           String?
+  scope          String
+  tokenPayload   String
+  refreshPresent Boolean  @default(false)
+  updatedAt      DateTime @updatedAt
 }

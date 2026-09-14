@@ -1,6 +1,6 @@
 # ResearchReach
 
-ResearchReach helps a college student find professors whose public research actually matches their background, draft a personalized undergraduate research-interest email, attach a real resume PDF, and send approved messages through Microsoft Outlook with Microsoft Graph.
+ResearchReach helps a college student find professors whose public research actually matches their background, draft a personalized undergraduate research-interest email, attach a real resume PDF, and send approved messages through Gmail.
 
 It is a Next.js app with a Postgres database on Supabase. Professor claims come only from pages the app retrieved. Student claims come only from the resume PDF and explicit profile fields. If evidence is thin, the professor is marked `INSUFFICIENT_EVIDENCE` and no email is sent.
 
@@ -20,7 +20,7 @@ Keep `DRY_RUN=true` and `AUTO_SEND=false` until you intentionally enable live se
 4. It scores relevance against Saket's resume and the configured research families (AI, software engineering, security, information systems, and related areas).
 5. It generates a professor-specific email in the style of the provided undergraduate template.
 6. Review Mode is the default. You edit, approve, reject, or send.
-7. Sending uses delegated Microsoft Graph `POST /me/sendMail` with the actual resume PDF attached. `DRY_RUN=true` by default, so first-time installs never call Graph.
+7. Sending uses the Gmail API `users.messages.send` with the actual resume PDF attached as RFC 2822 MIME. `DRY_RUN=true` by default, so first-time installs never call Gmail.
 
 ## Architecture
 
@@ -29,7 +29,7 @@ Keep `DRY_RUN=true` and `AUTO_SEND=false` until you intentionally enable live se
 | UI | `app/`, `components/` |
 | Discovery / crawl / score | `lib/research/`, `lib/search/` |
 | Resume | `lib/resume/` |
-| Email generation and Graph send | `lib/email/`, `lib/microsoft/` |
+| Email generation and Gmail send | `lib/email/`, `lib/google/` |
 | University catalog | `data/universities.json`, `lib/universities/catalog.ts` |
 | Prompts | `prompts/` |
 | Database | `prisma/schema.prisma` (Postgres / Supabase) |
@@ -41,7 +41,7 @@ Provider interfaces:
 - `ProfessorResearchProvider`
 - `EmailProvider`
 
-UI pages never call Microsoft Graph, crawl the web, or invoke an LLM. Route handlers and server-only services own those side effects.
+UI pages never call Gmail, crawl the web, or invoke an LLM directly. Route handlers and server-only services own those side effects.
 
 ## Requirements
 
@@ -50,7 +50,7 @@ UI pages never call Microsoft Graph, crawl the web, or invoke an LLM. Route hand
 - A PDF resume
 - Optional: OpenAI-compatible LLM key
 - Optional: Tavily or Brave search API key
-- Microsoft Entra app registration before live Outlook sending
+- Google Cloud OAuth client and Gmail API before live Gmail sending
 
 ## Installation
 
@@ -64,7 +64,11 @@ Generate a long `SESSION_SECRET` and `TOKEN_ENCRYPTION_KEY` (32+ characters each
 
 ```bash
 npx prisma migrate deploy
-npm run resume:generate
+```
+
+Copy your real resume PDF to `data/resume.pdf`. `npm run resume:generate` writes an isolated test fixture at `data/fixtures/starter-resume.pdf` and will refuse to overwrite the real resume.
+
+```bash
 npm run dev
 ```
 
@@ -85,16 +89,16 @@ Get the URI from Supabase **Project Settings → Database**. Use the pooler on p
 npx prisma migrate deploy
 ```
 
-Tables: professors, evidence, drafts, sends, settings, discovery runs, page cache, and the encrypted Outlook token cache. Row Level Security is enabled on app tables. The server uses Prisma with the database URL, not the browser anon key.
+Tables: professors, evidence, drafts, sends, settings, discovery runs, page cache, and the encrypted Gmail token store. Row Level Security is enabled on app tables. The server uses Prisma with the database URL, not the browser anon key.
 
 ## Railway
 
 The app deploys to Railway with the Dockerfile in this repo.
 
 1. Railway project: `ai-recruiter-platform`
-2. Set the same secrets as `.env.example` (never commit them). Required: `DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET`, `TOKEN_ENCRYPTION_KEY`, `DRY_RUN=true`, `AUTO_SEND=false`
-3. After Railway gives a public URL, set `MICROSOFT_REDIRECT_URI` to `https://YOUR-DOMAIN/api/auth/microsoft/callback` in both Railway and Entra
-4. `DRY_RUN` stays true until you turn it off
+2. Set the same secrets as `.env.example` (never commit them). Required: `DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET`, `TOKEN_ENCRYPTION_KEY`, `DRY_RUN=true`, `AUTO_SEND=false`, `APP_ACCESS_SECRET`
+3. Set `GOOGLE_REDIRECT_URI` to `https://<the-actual-Railway-host>/api/auth/google/callback` using the URL Railway assigned. Do not guess a domain. The current live host, if unchanged, is `https://web-production-3b016.up.railway.app`.
+4. `DRY_RUN` stays true until you turn it off. Production refuses anonymous access unless `APP_ACCESS_SECRET` is set and the operator unlocks the app. Connecting Gmail does not send a test email.
 
 The resume PDF is not in git. Upload it to the service (or set `RESUME_PATH` to a mounted file) before live sending. Without a resume, sending stays disabled.
 
@@ -108,7 +112,7 @@ Override with:
 RESUME_PATH=data/resume.pdf
 ```
 
-Put your real PDF there. `npm run resume:generate` writes a starter PDF from the facts in this repo so the parser has something to read on first run. Replace it with your actual resume. If the file is missing, the dashboard shows an error and sending is disabled.
+Put your real PDF there. `npm run resume:generate` writes `data/fixtures/starter-resume.pdf` only. It will not overwrite `data/resume.pdf`. If the real file is missing, the dashboard shows an error and sending is disabled.
 
 The parser, not this README, is the source of truth for experience wording. It will not turn "helped" into "built".
 
@@ -133,47 +137,45 @@ Seeded crawling uses each school's own faculty URLs. Search queries use `site:th
 
 You can still paste extra faculty URLs when a single school is selected.
 
-## Microsoft Entra app registration
+## Google Cloud and Gmail
 
-You never type an Outlook password into ResearchReach. Outlook uses OAuth.
+You never type a Gmail password into ResearchReach. Sending uses Google OAuth and the Gmail API send scope only.
 
-1. Sign in at [https://entra.microsoft.com/](https://entra.microsoft.com/) (Microsoft Entra admin center).
-2. Go to **Identity** → **Applications** → **App registrations** → **New registration**.
-3. Name it `ResearchReach`.
-4. Under **Supported account types**, choose **Accounts in any organizational directory and personal Microsoft accounts** if you want both school and personal Outlook. That corresponds to `MICROSOFT_TENANT_ID=common`.
-5. Redirect URI:
-   - Platform: **Web**
-   - URI: `http://localhost:3000/api/auth/microsoft/callback`
-6. Register.
+Intended sender: `saket.amanana@gmail.com`. `login_hint` is not identity verification; the app checks the verified ID token email.
 
-### Client ID and secret
-
-- **Application (client) ID** → `MICROSOFT_CLIENT_ID`
-- **Certificates & secrets** → **New client secret** → `MICROSOFT_CLIENT_SECRET`
-- **Directory (tenant) ID** → `MICROSOFT_TENANT_ID` (or leave `common`)
-
-### Graph permissions
-
-**API permissions** → **Microsoft Graph** → **Delegated permissions**:
-
-- `Mail.Send`
-- `User.Read`
-- OpenID permissions that Entra adds for sign-in (`openid`, `profile`, `offline_access`)
-
-Do **not** add `Mail.Read`. Grant admin consent only if your tenant requires it. ResearchReach does not request mailbox read access.
-
-If a campus tenant blocks user consent, the app shows that error instead of failing silently. An admin must grant the delegated permissions.
-
-### Environment variables for Microsoft
+1. Open [Google Cloud Console](https://console.cloud.google.com/).
+2. Create or select a project.
+3. Enable the **Gmail API**.
+4. Configure the OAuth consent screen:
+   - User type: **External**
+   - Add `saket.amanana@gmail.com` as a test user
+   - Scopes: `openid`, `email`, and `https://www.googleapis.com/auth/gmail.send`
+   - Do **not** add `gmail.readonly`, `gmail.modify`, `gmail.compose`, or `https://mail.google.com/`
+5. Create an OAuth client:
+   - Application type: **Web application**
+   - Authorized redirect URI (local): `http://localhost:3000/api/auth/google/callback`
+   - Authorized redirect URI (hosted): `https://<your-actual-app-host>/api/auth/google/callback`
+6. Put the client ID and secret in `.env.local` and the host environment. Do not paste them into chat or GitHub.
 
 ```
-MICROSOFT_CLIENT_ID=
-MICROSOFT_CLIENT_SECRET=
-MICROSOFT_TENANT_ID=common
-MICROSOFT_REDIRECT_URI=http://localhost:3000/api/auth/microsoft/callback
+EMAIL_PROVIDER=gmail
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/callback
+GOOGLE_ALLOWED_EMAIL=saket.amanana@gmail.com
 ```
 
-Then open **Settings** → **Connect Outlook**. After sign-in you return to Settings. Tokens are encrypted in Postgres. They are never printed in logs.
+Then open **Settings** → **Connect Gmail**. After sign-in you return to Settings. Tokens are encrypted in Postgres. They are never printed in logs.
+
+Connecting Gmail does not authorize a test send. Keep `DRY_RUN=true` until you intentionally send.
+
+Google apps in External/Testing status that use Gmail scopes generally expire refresh tokens after 7 days until the app is verified/published. The Settings page tells you to reconnect when that happens. Do not bypass Google's verification warnings.
+
+Official references:
+
+- https://developers.google.com/identity/protocols/oauth2/web-server
+- https://developers.google.com/workspace/gmail/api/auth/scopes
+- https://developers.google.com/workspace/gmail/api/guides/sending
 
 ## LLM provider
 
@@ -232,11 +234,11 @@ Uncertainty goes to the manual queue.
 ## First test email
 
 1. Keep `DRY_RUN=true`.
-2. Connect Outlook (optional for dry run).
+2. Connect Gmail (optional for dry run; required before a live send).
 3. Run discovery.
 4. Open a qualified professor, read the evidence, edit if needed, approve, send.
 5. Confirm a `DRY_RUN` row on **Sent**. No Graph `sendMail` call happens.
-6. When you are ready, set `DRY_RUN=false` in Settings or `.env.local` and send again. Graph attaches `data/resume.pdf` as `application/pdf`.
+6. When you are ready, set `DRY_RUN=false` in Settings or `.env.local` and send again. Gmail attaches `data/resume.pdf` as `application/pdf`.
 
 Defaults: 15 emails/day, 90-day recontact cooldown.
 
@@ -249,17 +251,17 @@ npm run lint
 npm run build
 ```
 
-Tests mock Graph by constructing payloads only. They never send real email. Fixtures cover faculty HTML, prompt-injection page text, personalization, and the university catalog.
+Tests mock Gmail/OAuth/transport by constructing MIME payloads only. They never send real email. Fixtures cover faculty HTML, prompt-injection page text, personalization, and the university catalog.
 
 ## Troubleshooting
 
 | Problem | What to try |
 | --- | --- |
 | Resume missing | Place a PDF at `data/resume.pdf` or set `RESUME_PATH` |
-| Outlook connect fails | Check client ID/secret, redirect URI exact match, tenant `common` vs single-tenant |
-| Tenant consent error | Admin must grant `Mail.Send` and `User.Read` |
-| Graph 401 | Connect Outlook again |
-| Graph 429 | Wait for Retry-After; the app surfaces the throttle |
+| Gmail connect fails | Check client ID/secret, exact redirect URI, Gmail API enabled, test user added |
+| Wrong Google account | Sign in as saket.amanana@gmail.com; the saved account is not replaced |
+| Gmail 401 / invalid_grant | Reconnect Gmail. Testing apps often expire refresh tokens after 7 days |
+| Gmail 429 | Wait for Retry-After; the app surfaces the throttle |
 | No professors found | Add a working faculty directory URL; some campuses need extra seeds |
 | Discovery is slow | That is expected; crawl delay is intentional |
 | LLM errors | The app falls back to deterministic grounded analysis |

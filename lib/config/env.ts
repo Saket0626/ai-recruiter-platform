@@ -37,6 +37,12 @@ const envSchema = z.object({
   DRY_RUN: booleanFromEnv.default(true),
   PLAYWRIGHT_ENABLED: booleanFromEnv.default(false),
   CRAWL_DELAY_MS: z.coerce.number().int().nonnegative().default(1000),
+  APP_ACCESS_SECRET: z.string().optional().default(""),
+  EMAIL_PROVIDER: z.enum(["gmail"]).default("gmail"),
+  GOOGLE_CLIENT_ID: z.string().optional().default(""),
+  GOOGLE_CLIENT_SECRET: z.string().optional().default(""),
+  GOOGLE_REDIRECT_URI: z.string().default("http://localhost:3000/api/auth/google/callback"),
+  GOOGLE_ALLOWED_EMAIL: z.string().email().default("saket.amanana@gmail.com"),
   NODE_ENV: z.string().optional(),
 });
 
@@ -60,6 +66,11 @@ export function isLlmConfigured() {
 
 export function isSearchApiConfigured() {
   return Boolean(getEnv().SEARCH_API_KEY);
+}
+
+export function isGoogleConfigured() {
+  const env = getEnv();
+  return Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
 }
 
 export function isMicrosoftConfigured() {

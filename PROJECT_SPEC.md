@@ -2,9 +2,9 @@
 
 ## Purpose and scope
 
-Build a local-first application for Saket to discover relevant professors, retrieve research evidence, compare it to his confirmed background, draft personalized undergraduate research-interest emails, attach his real resume, and send approved messages through Microsoft Outlook.
+Build a local-first application for Saket to discover relevant professors, retrieve research evidence, compare it to his confirmed background, draft personalized undergraduate research-interest emails, attach his real resume, and send approved messages through Gmail (`saket.amanana@gmail.com`).
 
-This document consolidates the user's earlier build brief and subsequent resume corrections. It specifies intended behavior, not features already implemented. No fake professor records outside tests. No placeholder resume or simulated feature presented as real.
+This document consolidates the user's earlier build brief and subsequent resume corrections. Sending uses Gmail (`saket.amanana@gmail.com`) rather than Outlook; that user requirement supersedes the Outlook-specific section below. It specifies intended behavior, not features already implemented. No fake professor records outside tests. No placeholder resume or simulated feature presented as real.
 
 ## Architecture
 
@@ -104,7 +104,21 @@ Quality gate before queueing and again before sending:
 
 Manually edited or regenerated drafts must be revalidated and reapproved. Block generic inboxes such as info@, admissions@, department@, support@, contact@, office@ unless specifically approved manually. Autopilot must never infer that exception.
 
-## Outlook authentication and sending
+## Gmail authentication and sending
+
+This section supersedes the original Outlook/Microsoft Graph sending requirement.
+
+Implement Google OAuth 2.0 authorization code flow with a supported Google auth library. Use scopes `openid`, `email`, and `https://www.googleapis.com/auth/gmail.send`, with `access_type=offline` for refresh. Do not request `gmail.readonly`, `gmail.modify`, `gmail.compose`, or full mailbox access. Keep drafts local.
+
+Validate one-use state, PKCE, verified ID token audience/issuer/expiry/nonce, and require verified email `GOOGLE_ALLOWED_EMAIL` (default `saket.amanana@gmail.com`). `login_hint` is not identity verification. Denied consent or the wrong account must not replace the saved account.
+
+Encrypt Google tokens separately from any leftover Microsoft cache. Preserve an existing refresh token if a later grant omits one.
+
+Implement `GmailEmailProvider` behind `EmailProvider`. Send RFC 2822 MIME multipart/mixed with the actual PDF, encoded base64url, via `users.messages.send` (`userId=me`). From must be the verified configured Gmail identity. `EMAIL_PROVIDER=gmail` is the default. Do not fall back to Outlook.
+
+## Outlook authentication and sending (superseded)
+
+The original Outlook/MSAL/Graph requirement is retained below only as historical context. Do not implement Outlook as the live sending path.
 
 Implement browser OAuth authorization code flow with MSAL and Microsoft Graph delegated access. Validate state, redirect targets, CSRF/session protections, and use PKCE where supported for the selected architecture. Do not ask for Microsoft passwords.
 

@@ -1,6 +1,5 @@
 import { getAppSettings } from "@/lib/db/settings";
-import { isMicrosoftConfigured } from "@/lib/config/env";
-import { prisma } from "@/lib/db/prisma";
+import { getGoogleConnectionView } from "@/lib/google/oauth";
 import { loadStudentProfile } from "@/lib/resume/service";
 import { SettingsForm } from "@/components/SettingsForm";
 
@@ -12,10 +11,10 @@ export default async function SettingsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const query = await searchParams;
-  const [settings, account, resume] = await Promise.all([
+  const [settings, resume, google] = await Promise.all([
     getAppSettings(),
-    prisma.authAccount.findUnique({ where: { id: "default" } }),
     loadStudentProfile(),
+    getGoogleConnectionView(),
   ]);
   const oauthError = typeof query.oauthError === "string" ? query.oauthError : null;
   const connected = query.connected === "1";
@@ -27,16 +26,34 @@ export default async function SettingsPage({
         <p className="mt-2 text-muted">Review Mode stays on unless you explicitly enable Autopilot. DRY_RUN is the safe default.</p>
       </header>
       <section className="rr-card p-5 space-y-3">
-        <h2 className="font-semibold">Outlook</h2>
+        <h2 className="font-semibold">Gmail</h2>
         {oauthError ? <p className="text-sm text-[#9f1239]">{oauthError}</p> : null}
-        {connected ? <p className="text-sm text-[#166534]">Outlook connected.</p> : null}
+        {connected ? <p className="text-sm text-[#166534]">Gmail connected as {google.email}.</p> : null}
         <p className="text-sm text-muted">
-          {account?.username ? `Signed in as ${account.username}` : isMicrosoftConfigured() ? "Not connected." : "Add MICROSOFT_CLIENT_ID and MICROSOFT_CLIENT_SECRET to .env.local first."}
+          Allowed sender: {google.allowedEmail}. Connecting Gmail does not send a test email.
         </p>
+        {google.configured ? (
+          <p className="text-sm text-muted">
+            {google.connected
+              ? `Signed in as ${google.email}. Send scope: ${google.hasSendScope ? "gmail.send granted" : "missing"}`
+              : "Not connected."}
+          </p>
+        ) : (
+          <p className="text-sm text-[#9f1239]">
+            Missing {google.missing.join(", ")} in server environment. Add them locally or on the host; do not paste secrets into chat.
+          </p>
+        )}
+        {google.reconnectReason ? <p className="text-sm text-[#9f1239]">{google.reconnectReason}</p> : null}
+        <p className="text-sm text-muted">Redirect URI in use: {google.redirectUri}</p>
+        <p className="text-sm text-muted">{google.testingRefreshNote}</p>
         <div className="flex gap-2">
-          <a className="rr-btn rr-btn-primary" href="/api/auth/microsoft">Connect Outlook</a>
-          <form action="/api/auth/microsoft/logout" method="post">
-            <button className="rr-btn rr-btn-ghost" type="submit">Disconnect</button>
+          <a className="rr-btn rr-btn-primary" href="/api/auth/google">
+            Connect Gmail
+          </a>
+          <form action="/api/auth/google/logout" method="post">
+            <button className="rr-btn rr-btn-ghost" type="submit">
+              Disconnect
+            </button>
           </form>
         </div>
       </section>

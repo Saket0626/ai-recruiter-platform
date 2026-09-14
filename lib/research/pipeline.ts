@@ -9,14 +9,18 @@ import { extractFacultyFromDirectory, extractProfileDetails, sourcePriority } fr
 import { scoreProfessorRelevance } from "@/lib/research/scorer";
 import { CompositeSearchProvider } from "@/lib/search/composite";
 import { generateGroundedEmail } from "@/lib/email/generator";
-import { GraphEmailProvider } from "@/lib/email/graph-provider";
+import { createEmailProvider } from "@/lib/email/create-provider";
 import { dailyCapReached, isInCooldown, jitterDelayMs } from "@/lib/email/rate-limit";
+import { assertDraftSendable, professorStatusAfterSend } from "@/lib/email/send-gate";
 import { loadStudentProfile, resolveResumePath, resumeExists } from "@/lib/resume/service";
 import { isGenericInbox, normalizeEmail, normalizeUrl } from "@/lib/security/email";
 import { resolveUniversitySelections, type ResolvedUniversity } from "@/lib/universities/catalog";
 import { discoveryInputSchema, type DiscoveryInput, type StudentProfile } from "@/lib/validation/schemas";
 import { validateEmailDraft } from "@/lib/validation/email-quality";
-import { getEnv } from "@/lib/config/env";
+
+function isUniqueConflict(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && (error as { code: string }).code === "P2002";
+}
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -424,12 +428,17 @@ export async function sendApprovedDraft(draftId: string, options?: { autopilot?:
   });
   if (!draft) throw new Error("Draft not found");
   const settings = await getAppSettings();
+  assertDraftSendable({
+    status: draft.status,
+    autopilot: options?.autopilot,
+    autoSend: settings.AUTO_SEND,
+  });
   const resumePath = resolveResumePath();
   const resume = await loadStudentProfile(resumePath);
   if (!resume.ok) throw new Error(resume.error);
 
   if (await dailyCapReached()) {
-    throw new Error(`Daily email cap of ${getEnv().MAX_EMAILS_PER_DAY} has been reached.`);
+    throw new Error(`Daily email cap of ${settings.MAX_EMAILS_PER_DAY} has been reached.`);
   }
   if (draft.professor.email && (await isInCooldown(draft.professor.email))) {
     throw new Error("This professor was contacted within the cooldown window.");
@@ -457,29 +466,65 @@ export async function sendApprovedDraft(draftId: string, options?: { autopilot?:
         validationPassed: false,
         validationErrors: JSON.stringify(failures),
         failureReason: failures.map((item) => item.message).join(" "),
+        approvedAt: null,
       },
     });
     throw new Error(failures[0]?.message ?? "Quality gate failed");
   }
   if (!draft.professor.email) throw new Error("Professor email is missing.");
 
-  const provider = new GraphEmailProvider();
-  const result = await provider.sendResearchEmail({
-    recipient: draft.professor.email,
-    subject: draft.subject,
-    body: draft.body,
-    resumePath,
+  const existingSend = await prisma.emailSend.findFirst({
+    where: { draftId: draft.id, status: { in: ["SENT", "DRY_RUN", "SUBMITTING", "UNKNOWN"] } },
   });
+  if (existingSend) {
+    throw new Error("This draft already has a send attempt. Open Sent history instead of retrying blindly.");
+  }
 
-  const status = result.ok ? (result.dryRun ? "DRY_RUN" : "SENT") : "FAILED";
-  const send = await prisma.emailSend.create({
-    data: {
-      professorId: draft.professorId,
-      draftId: draft.id,
+  let reservation;
+  try {
+    reservation = await prisma.emailSend.create({
+      data: {
+        professorId: draft.professorId,
+        draftId: draft.id,
+        recipient: draft.professor.email,
+        recipientNormalized: normalizeEmail(draft.professor.email),
+        subject: draft.subject,
+        body: draft.body,
+        status: "SUBMITTING",
+        dryRun: settings.DRY_RUN,
+      },
+    });
+  } catch (error) {
+    if (isUniqueConflict(error)) {
+      throw new Error("This draft already has a send attempt. Open Sent history instead of retrying blindly.");
+    }
+    throw error;
+  }
+
+  const provider = createEmailProvider();
+  let result;
+  try {
+    result = await provider.sendResearchEmail({
       recipient: draft.professor.email,
-      recipientNormalized: normalizeEmail(draft.professor.email),
       subject: draft.subject,
       body: draft.body,
+      resumePath,
+    });
+  } catch (error) {
+    await prisma.emailSend.update({
+      where: { id: reservation.id },
+      data: {
+        status: "UNKNOWN",
+        failureReason: error instanceof Error ? error.message : "Send interrupted before a Graph response",
+      },
+    });
+    throw error;
+  }
+
+  const status = result.ok ? (result.dryRun ? "DRY_RUN" : "SENT") : "FAILED";
+  const send = await prisma.emailSend.update({
+    where: { id: reservation.id },
+    data: {
       status,
       dryRun: result.dryRun,
       graphStatus: result.graphStatus,
@@ -491,15 +536,15 @@ export async function sendApprovedDraft(draftId: string, options?: { autopilot?:
     where: { id: draft.id },
     data: {
       status,
-      sentAt: result.ok ? new Date() : null,
+      sentAt: result.ok && !result.dryRun ? new Date() : null,
       failureReason: result.error,
     },
   });
   await prisma.professor.update({
     where: { id: draft.professorId },
     data: {
-      status: result.ok ? "SENT" : "FAILED",
-      lastContactedAt: result.ok ? new Date() : undefined,
+      status: professorStatusAfterSend(result.dryRun, result.ok),
+      lastContactedAt: result.ok && !result.dryRun ? new Date() : undefined,
     },
   });
   if (!result.ok) throw new Error(result.error ?? "Send failed");

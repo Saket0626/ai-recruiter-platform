@@ -1,6 +1,5 @@
 import { getEnv } from "@/lib/config/env";
 import { logger } from "@/lib/logging/logger";
-import { USER_AGENT } from "@/lib/config/defaults";
 import type { SearchProvider, SearchResult, FacultySearchQuery } from "@/lib/search/provider";
 import { queriesForRun } from "@/lib/search/queries";
 

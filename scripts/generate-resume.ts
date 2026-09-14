@@ -1,8 +1,17 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 async function main() {
+  const dest = path.join(process.cwd(), "data/fixtures/starter-resume.pdf");
+  const userResume = path.join(process.cwd(), "data/resume.pdf");
+  if (process.argv.includes("--write-user-resume")) {
+    throw new Error("Refusing to write data/resume.pdf. Put the real resume there yourself. Tests and local demos use data/fixtures/starter-resume.pdf.");
+  }
+  if (existsSync(userResume) && dest === userResume) {
+    throw new Error("Refusing to overwrite the real resume.");
+  }
+
   const lines = [
     "SAKET",
     "The University of Texas at Dallas",
@@ -36,9 +45,9 @@ async function main() {
     page.drawText(line, { x: 54, y, size: line === "SAKET" ? 22 : 11, font, color: rgb(0.1, 0.08, 0.06) });
     y -= line === "SAKET" ? 28 : 16;
   }
-  mkdirSync(path.join(process.cwd(), "data"), { recursive: true });
-  writeFileSync(path.join(process.cwd(), "data/resume.pdf"), await pdf.save());
-  console.log("Wrote data/resume.pdf");
+  mkdirSync(path.dirname(dest), { recursive: true });
+  writeFileSync(dest, await pdf.save());
+  console.log(`Wrote isolated fixture ${dest}. Place the real resume at ${userResume}.`);
 }
 
 main().catch((error) => {

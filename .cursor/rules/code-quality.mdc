@@ -8,6 +8,6 @@ alwaysApply: false
 
 Prefer focused modules, typed return values, and Zod validation for structured LLM output. Do not silently accept malformed model JSON.
 
-Handle OAuth, Graph, crawl, resume, and database errors with actionable messages. Do not expose stack traces or secrets in the browser.
+Handle OAuth, Gmail, crawl, resume, and database errors with actionable messages. Do not expose stack traces or secrets in the browser.
 
 Do not log secrets. Do not leave TODO comments in place of required features.

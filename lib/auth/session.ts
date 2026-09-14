@@ -5,6 +5,7 @@ import { getEnv } from "@/lib/config/env";
 export type SessionData = {
   oauthState?: string;
   oauthNonce?: string;
+  oauthCodeVerifier?: string;
   connected?: boolean;
 };
 

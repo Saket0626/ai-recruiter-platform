@@ -3,10 +3,10 @@ import { prisma } from "@/lib/db/prisma";
 import { sentCountToday } from "@/lib/email/rate-limit";
 import { loadStudentProfile, resumeExists } from "@/lib/resume/service";
 import { getAppSettings } from "@/lib/db/settings";
-import { isMicrosoftConfigured } from "@/lib/config/env";
+import { getGoogleConnectionView } from "@/lib/google/oauth";
 
 export async function GET() {
-  const [discovered, qualified, queued, approved, sent, failed, daily] = await Promise.all([
+  const [discovered, qualified, queued, approved, sent, failed, daily, google] = await Promise.all([
     prisma.professor.count(),
     prisma.professor.count({ where: { status: { in: ["QUALIFIED", "QUEUED", "APPROVED", "SENT"] } } }),
     prisma.emailDraft.count({ where: { status: "QUEUED" } }),
@@ -14,10 +14,10 @@ export async function GET() {
     prisma.emailDraft.count({ where: { status: { in: ["SENT", "DRY_RUN"] } } }),
     prisma.emailDraft.count({ where: { status: "FAILED" } }),
     sentCountToday(),
+    getGoogleConnectionView(),
   ]);
   const resume = await loadStudentProfile();
   const settings = await getAppSettings();
-  const account = await prisma.authAccount.findUnique({ where: { id: "default" } });
   return NextResponse.json({
     discovered,
     qualified,
@@ -28,8 +28,7 @@ export async function GET() {
     daily,
     resume: resume.ok ? { ok: true, path: resume.profile.resumePath } : { ok: false, error: resume.error },
     resumeExists: resumeExists(),
-    microsoftConfigured: isMicrosoftConfigured(),
-    outlook: account?.username ?? null,
+    google,
     settings,
   });
 }

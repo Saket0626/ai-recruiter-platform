@@ -4,12 +4,12 @@ import { sentCountToday } from "@/lib/email/rate-limit";
 import { loadStudentProfile } from "@/lib/resume/service";
 import { getAppSettings } from "@/lib/db/settings";
 import { StatCard } from "@/components/StatCard";
-import { isMicrosoftConfigured } from "@/lib/config/env";
+import { getGoogleConnectionView } from "@/lib/google/oauth";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [discovered, qualified, queued, approved, sent, failed, daily, resume, settings, account] = await Promise.all([
+  const [discovered, qualified, queued, approved, sent, failed, daily, resume, settings, google] = await Promise.all([
     prisma.professor.count(),
     prisma.professor.count({ where: { status: { in: ["QUALIFIED", "QUEUED", "APPROVED", "SENT"] } } }),
     prisma.emailDraft.count({ where: { status: { in: ["QUEUED", "VALIDATION_FAILED"] } } }),
@@ -19,7 +19,7 @@ export default async function DashboardPage() {
     sentCountToday(),
     loadStudentProfile(),
     getAppSettings(),
-    prisma.authAccount.findUnique({ where: { id: "default" } }),
+    getGoogleConnectionView(),
   ]);
 
   return (
@@ -28,7 +28,7 @@ export default async function DashboardPage() {
         <p className="text-sm uppercase tracking-[0.18em] text-muted">Overview</p>
         <h1 className="mt-1 text-3xl font-semibold">ResearchReach dashboard</h1>
         <p className="mt-2 max-w-2xl text-muted">
-          Discover professors across the top 100 U.S. universities and other research schools, keep every research claim tied to a retrieved page, and send approved notes through Outlook.
+          Discover professors across the top 100 U.S. universities and other research schools, keep every research claim tied to a retrieved page, and send approved notes through Gmail.
         </p>
       </header>
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -36,7 +36,7 @@ export default async function DashboardPage() {
         <StatCard label="Qualified" value={qualified} />
         <StatCard label="Awaiting review" value={queued} />
         <StatCard label="Approved" value={approved} />
-        <StatCard label="Sent" value={sent} hint={settings.DRY_RUN ? "DRY_RUN is on" : "Live Graph sending"} />
+        <StatCard label="Sent" value={sent} hint={settings.DRY_RUN ? "DRY_RUN is on" : "Live Gmail sending"} />
         <StatCard label="Failed sends" value={failed} />
         <StatCard label="Sent today" value={`${daily}/${settings.MAX_EMAILS_PER_DAY}`} />
         <StatCard label="Autopilot" value={settings.AUTO_SEND ? "On" : "Off"} hint={`Threshold ${settings.AUTOPILOT_MIN_SCORE}`} />
@@ -51,9 +51,13 @@ export default async function DashboardPage() {
           )}
         </div>
         <div className="rr-card p-5">
-          <h2 className="font-semibold">Outlook</h2>
+          <h2 className="font-semibold">Gmail</h2>
           <p className="mt-2 text-sm text-muted">
-            {account?.username ? `Connected as ${account.username}` : isMicrosoftConfigured() ? "Not connected yet." : "Entra app credentials are not configured."}
+            {google.connected
+              ? `Connected as ${google.email}. Send scope: ${google.hasSendScope ? "granted" : "missing"}`
+              : google.configured
+                ? "Not connected yet."
+                : "Google OAuth client is not configured."}
           </p>
           <Link className="rr-btn rr-btn-ghost mt-4" href="/settings">Open settings</Link>
         </div>

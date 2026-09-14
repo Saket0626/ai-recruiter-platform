@@ -1,4 +1,4 @@
-import { z, type ZodType } from "zod";
+import { type ZodType } from "zod";
 
 export function extractJson(text: string): unknown {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);

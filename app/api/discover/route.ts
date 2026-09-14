@@ -2,6 +2,7 @@ import { after, NextResponse } from "next/server";
 import { discoveryInputSchema } from "@/lib/validation/schemas";
 import { executeDiscovery, startDiscoveryRun } from "@/lib/research/pipeline";
 import { publicError } from "@/lib/security/errors";
+import { requireMutatingAccess } from "@/lib/security/access";
 import { prisma } from "@/lib/db/prisma";
 import { logger } from "@/lib/logging/logger";
 
@@ -13,6 +14,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const denied = requireMutatingAccess(request);
+  if (denied) return denied;
   try {
     const body = await request.json();
     const input = discoveryInputSchema.parse(body);

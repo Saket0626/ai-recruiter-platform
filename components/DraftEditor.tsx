@@ -87,7 +87,7 @@ export function DraftEditor({
           type="button"
           disabled={busy}
           onClick={() => {
-            if (confirm("Send this email through Outlook with the resume attached?")) act("send");
+            if (confirm("Send this email through Gmail with the resume attached?")) act("send");
           }}
         >
           Send
