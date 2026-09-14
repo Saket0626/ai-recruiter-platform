@@ -4,7 +4,7 @@ RUN apk add --no-cache openssl libc6-compat
 FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm install --ignore-scripts
 
 FROM base AS builder
 WORKDIR /app
