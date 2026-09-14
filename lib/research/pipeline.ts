@@ -371,6 +371,7 @@ async function persistAndResearch(input: {
     topics: analysis.research_topics,
     researchSummary: analysis.research_summary,
     student: input.student,
+    evidenceTexts: evidenceRows.map((row) => row.extractedText),
   });
   const latest = await prisma.professor.findUniqueOrThrow({ where: { id: professor.id } });
   const failures = validateEmailDraft({

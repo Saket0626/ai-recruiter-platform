@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { generateGroundedEmail } from "@/lib/email/generator";
+import { generateGroundedEmail, wordCount } from "@/lib/email/generator";
 import { validateEmailDraft } from "@/lib/validation/email-quality";
+import { extractGroundedResearchDetail } from "@/lib/email/research-detail";
 import { parseResumeText } from "@/lib/resume/parser";
 import { DeterministicLlmProvider } from "@/lib/llm/deterministic";
 
@@ -51,6 +52,93 @@ describe("email generation and quality gates", () => {
     expect(ai.body).not.toEqual(security.body);
     expect(ai.body).not.toEqual(info.body);
     expect(ai.subject).not.toEqual(security.subject);
+    expect(ai.body).toMatch(/Hello Dr\. Ng,/);
+    expect(ai.body).toMatch(/attached my resume for your review/i);
+    expect(ai.body).toMatch(/continue through the spring and beyond/i);
+    expect(ai.body).toMatch(/Sincerely,\nSaket/);
+    expect(ai.body).not.toMatch(/[\u2014\u2013;]/);
+  });
+
+  it("grounds each email in that professor's retrieved research, not a copied template", () => {
+    const cavusogluEvidence = [
+      "Dr. Cavusoglu studies the economics of information security investments in organizations. His information systems work also covers information security and privacy.",
+    ];
+    const hamlenEvidence = [
+      "The lab investigates binary rewriting defenses against return-oriented programming attacks. Software security and program analysis are used to harden binaries.",
+    ];
+    const cavusoglu = generateGroundedEmail({
+      professorLastName: "Cavusoglu",
+      professorFullName: "Huseyin Cavusoglu",
+      topics: ["information systems", "information security and privacy"],
+      researchSummary: "information systems",
+      student,
+      evidenceTexts: cavusogluEvidence,
+    });
+    const hamlen = generateGroundedEmail({
+      professorLastName: "Hamlen",
+      professorFullName: "Kevin Hamlen",
+      topics: ["software security", "program analysis"],
+      researchSummary: "software security",
+      student,
+      evidenceTexts: hamlenEvidence,
+    });
+    expect(cavusoglu.body).toMatch(/economics of information security/i);
+    expect(hamlen.body).toMatch(/binary rewriting|return-oriented programming/i);
+    expect(cavusoglu.body).not.toMatch(/binary rewriting|return-oriented programming/i);
+    expect(hamlen.body).not.toMatch(/economics of information security/i);
+    expect(cavusoglu.body).not.toEqual(hamlen.body);
+
+    const cavusogluFailures = validateEmailDraft({
+      professorName: "Huseyin Cavusoglu",
+      professorEmail: "huseyin@utdallas.edu",
+      subject: cavusoglu.subject,
+      body: cavusoglu.body,
+      topics: ["information systems", "information security and privacy"],
+      evidenceTexts: cavusogluEvidence,
+      evidenceUrls: ["https://jindal.utdallas.edu/faculty/huseyin-cavusoglu/"],
+      student,
+      resumeAvailable: true,
+      relevanceScore: 80,
+      minScore: 65,
+      insufficientEvidence: false,
+    });
+    expect(cavusogluFailures.map((item) => item.code)).toEqual([]);
+    expect(wordCount(cavusoglu.body)).toBeGreaterThanOrEqual(120);
+    expect(wordCount(cavusoglu.body)).toBeLessThanOrEqual(320);
+    expect(
+      extractGroundedResearchDetail({
+        topics: ["information systems", "information security and privacy"],
+        evidenceTexts: cavusogluEvidence,
+      }),
+    ).toMatch(/economics of information security/i);
+  });
+
+  it("fails when a long evidence page is not reflected in the email body", () => {
+    const draft = generateGroundedEmail({
+      professorLastName: "Hamlen",
+      professorFullName: "Kevin Hamlen",
+      topics: ["software security"],
+      researchSummary: "software security",
+      student,
+      evidenceTexts: ["software security"],
+    });
+    const failures = validateEmailDraft({
+      professorName: "Kevin Hamlen",
+      professorEmail: "hamlen@utdallas.edu",
+      subject: draft.subject,
+      body: draft.body,
+      topics: ["software security"],
+      evidenceTexts: [
+        "The lab investigates binary rewriting defenses against return-oriented programming attacks on commodity software security tools.",
+      ],
+      evidenceUrls: ["https://cs.utdallas.edu/hamlen"],
+      student,
+      resumeAvailable: true,
+      relevanceScore: 80,
+      minScore: 65,
+      insufficientEvidence: false,
+    });
+    expect(failures.some((item) => item.code === "research_detail_missing")).toBe(true);
   });
 
   it("fails the quality gate when evidence is missing", () => {

@@ -1,4 +1,6 @@
 import { familyForTopics } from "@/lib/research/scorer";
+import { extractGroundedResearchDetail } from "@/lib/email/research-detail";
+import { sanitizeGeneratedText } from "@/lib/email/style";
 import type { GeneratedEmail, StudentProfile } from "@/lib/validation/schemas";
 import { generatedEmailSchema } from "@/lib/validation/schemas";
 
@@ -60,29 +62,89 @@ function pickWork(topics: string[], profile: StudentProfile) {
   return namedWork(profile, "Cloud of Goods") ?? namedWork(profile, "ChartWise") ?? allWork(profile)[0];
 }
 
-function experienceParagraph(topics: string[], profile: StudentProfile) {
-  const work = pickWork(topics, profile);
-  if (!work?.summary) {
-    return `I have been working on undergraduate software projects using ${profile.technicalSkills.slice(0, 3).join(", ") || "TypeScript and Python"}.`;
-  }
-  const claim = firstSentence(work.summary);
-  const where = work.kind === "experience" ? `At ${work.name}${work.role ? ` as a ${work.role}` : ""}` : `On ${work.name}`;
-  return `${where}, ${claim.charAt(0).toLowerCase()}${claim.slice(1)}${claim.endsWith(".") ? "" : "."}`;
+function formatTopics(topics: string[]) {
+  if (topics.length === 0) return "your research area";
+  if (topics.length === 1) return topics[0];
+  if (topics.length === 2) return `${topics[0]} and ${topics[1]}`;
+  return `${topics.slice(0, -1).join(", ")}, and ${topics[topics.length - 1]}`;
 }
 
-function connectionParagraph(topics: string[], profile: StudentProfile) {
-  const focus = topics.slice(0, 2).join(" and ") || "software research";
-  const skills = profile.technicalSkills.slice(0, 3).join(", ") || "software development";
-  if (/security|privacy/.test(topics.join(" ").toLowerCase())) {
-    return `That work, along with studying cybersecurity, Linux, and networking fundamentals, made me more interested in ${focus}. I am eager to gain experience in your lab, applying my background in ${skills} while learning more about ${focus}.`;
+function degreeFocus(profile: StudentProfile) {
+  return profile.degree.replace(/^B\.S\.\s+/i, "") || "Computer Information Systems and Technology";
+}
+
+function claimForWork(work: StudentWork | undefined, profile: StudentProfile) {
+  const skills = profile.technicalSkills.slice(0, 3).join(", ") || "TypeScript and Python";
+  if (!work) return `worked on undergraduate software projects using ${skills}`;
+
+  const haystacks = [
+    work.summary,
+    ...allWork(profile).map((item) => item.summary),
+    ...profile.accomplishments,
+    profile.resumeText,
+  ].filter(Boolean);
+
+  for (const text of haystacks) {
+    const sentences = `${text}.`.split(/(?<=[.!?])\s+/);
+    const hit = sentences.find((sentence) => {
+      const lower = sentence.toLowerCase();
+      return lower.includes(work.name.toLowerCase()) && sentence.replace(/\s+/g, " ").trim().length > work.name.length + 24;
+    });
+    if (hit) {
+      return firstSentence(hit)
+        .replace(new RegExp(`^${work.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*:\\s*`, "i"), "")
+        .replace(/^I\s+/i, "")
+        .replace(/[.]+$/, "");
+    }
   }
-  if (/information systems/.test(topics.join(" ").toLowerCase())) {
-    return `Seeing how technology is used within organizations made me curious about how information systems influence security, privacy, and business decisions. I am eager to gain experience in your lab while learning more about ${focus}.`;
+
+  const summary = firstSentence(work.summary).replace(/^I\s+/i, "").replace(/[.]+$/, "");
+  if (summary.toLowerCase() === work.name.toLowerCase()) {
+    return `worked on ${work.name} using ${skills}`;
   }
-  if (/artificial intelligence|machine learning|language model/.test(topics.join(" ").toLowerCase())) {
-    return `I am still early in my studies, but I want to learn how ${focus} research is actually done. I hope to contribute in small, practical ways while building a stronger foundation in the area.`;
+  return summary;
+}
+
+function experienceParagraph(topics: string[], profile: StudentProfile) {
+  const work = pickWork(topics, profile);
+  const core = claimForWork(work, profile);
+  const started = core.charAt(0).toLowerCase() + core.slice(1);
+  if (work?.name.toLowerCase() === "clinicalhours") {
+    return `I recently ${started}, and became fascinated by how technology affects the way people and organizations use and share information.`;
   }
-  return `I am eager to gain experience in your lab, connecting my undergraduate software work to ${focus} while learning from the research process.`;
+  return `I recently ${started}.`;
+}
+
+function connectionParagraph(topics: string[], labWork: string, profile: StudentProfile) {
+  const topicPhrase = formatTopics(topics);
+  const focus = topics[0] || "this research";
+  const joined = topics.join(" ").toLowerCase();
+  const work = pickWork(topics, profile);
+  if (/information systems/.test(joined)) {
+    return `Seeing how technology is used within organizations made me curious about ${labWork}. I am eager to gain experience in your lab, applying my background in technology to help investigate ${focus} while learning more about ${topicPhrase}.`;
+  }
+  if (/security|privacy/.test(joined)) {
+    return `My work on ${work?.name || "undergraduate software projects"} made me curious about ${labWork}. I am eager to gain experience in your lab, applying my background in technology to help investigate ${focus} while learning more about ${topicPhrase}.`;
+  }
+  if (/artificial intelligence|machine learning|language model/.test(joined)) {
+    return `My work on ${work?.name || "undergraduate software projects"} made me curious about ${labWork}. I am eager to gain experience in your lab, applying my background in technology to help investigate ${focus} while learning more about ${topicPhrase}.`;
+  }
+  return `My work on ${work?.name || "undergraduate software projects"} made me curious about ${labWork}. I am eager to gain experience in your lab, applying my background in technology to help investigate ${focus} while learning more about ${topicPhrase}.`;
+}
+
+function labWorkPhrase(input: {
+  topics: string[];
+  researchSummary: string;
+  evidenceTexts?: string[];
+}) {
+  const evidence =
+    input.evidenceTexts && input.evidenceTexts.join("").trim()
+      ? input.evidenceTexts
+      : [input.researchSummary, ...input.topics].filter(Boolean);
+  return extractGroundedResearchDetail({
+    topics: input.topics,
+    evidenceTexts: evidence,
+  }) || input.topics[0] || "this research";
 }
 
 export function generateGroundedEmail(input: {
@@ -91,22 +153,30 @@ export function generateGroundedEmail(input: {
   topics: string[];
   researchSummary: string;
   student: StudentProfile;
+  evidenceTexts?: string[];
 }): GeneratedEmail {
   const topics = input.topics.slice(0, 3);
-  const topicPhrase = topics.length > 1 ? `${topics[0]}, ${topics.slice(1).join(", ")}` : topics[0] || "software research";
+  const topicPhrase = formatTopics(topics);
+  const labWork = labWorkPhrase({
+    topics,
+    researchSummary: input.researchSummary,
+    evidenceTexts: input.evidenceTexts,
+  });
   const studentName = input.student.name.split(" ")[0] || "Saket";
-  const body = [
-    `Hello ${honorific(input.professorLastName)},`,
-    ``,
-    `My name is ${studentName}, and I am a ${input.student.currentStatus.toLowerCase()} at UT Dallas interested in pursuing ${input.student.degree.replace("B.S. ", "")}. I am interested in your research on ${topicPhrase}. I would love to learn more about your lab's work on ${topics[0] || "this research"} and see if I am able to assist with your research!`,
-    ``,
-    experienceParagraph(topics, input.student),
-    ``,
-    `${connectionParagraph(topics, input.student)} I have attached my resume for your review. I am available to start immediately and continue through the spring and beyond. Thank you for your time and consideration!`,
-    ``,
-    `Sincerely,`,
-    studentName,
-  ].join("\n");
+  const body = sanitizeGeneratedText(
+    [
+      `Hello ${honorific(input.professorLastName)},`,
+      ``,
+      `My name is ${studentName}, and I am a ${input.student.currentStatus.toLowerCase()} at UT Dallas interested in pursuing ${degreeFocus(input.student)}. I am interested in your research on ${topicPhrase}. I would love to learn more about your lab's work on ${labWork} and see if I am able to assist with your research!`,
+      ``,
+      experienceParagraph(topics, input.student),
+      ``,
+      `${connectionParagraph(topics, labWork, input.student)} I have attached my resume for your review. I am available to start immediately and continue through the spring and beyond. Thank you for your time and consideration!`,
+      ``,
+      `Sincerely,`,
+      studentName,
+    ].join("\n"),
+  );
 
   const family = familyForTopics(topics);
   const subject =
@@ -121,7 +191,7 @@ export function generateGroundedEmail(input: {
             : `UT Dallas Student Interested in Your ${topics[0] || "Research"} Research`;
 
   return generatedEmailSchema.parse({
-    subject,
+    subject: sanitizeGeneratedText(subject),
     body,
     personalized_topics: topics,
     student_claims: extractClaims(body),

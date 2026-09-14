@@ -1,6 +1,8 @@
 import { isGenericInbox, isValidEmailShape, normalizeEmail } from "@/lib/security/email";
 import { isResumeSupportedClaim } from "@/lib/resume/claims";
 import { wordCount } from "@/lib/email/generator";
+import { draftUsesResearchDetail, extractGroundedResearchDetail } from "@/lib/email/research-detail";
+import { styleFailures } from "@/lib/email/style";
 import type { StudentProfile } from "@/lib/validation/schemas";
 
 export type QualityFailure = {
@@ -70,9 +72,7 @@ export function validateEmailDraft(input: {
   if (/https?:\/\/|www\./i.test(input.body)) {
     failures.push({ code: "urls_in_body", message: "Email contains a URL." });
   }
-  if (/\u2014/.test(input.body) || /\u2014/.test(input.subject)) {
-    failures.push({ code: "em_dash", message: "Email contains an em dash." });
-  }
+  failures.push(...styleFailures(`${input.subject}\n${input.body}`));
   const words = wordCount(input.body);
   if (words < 120 || words > 320) {
     failures.push({ code: "length", message: `Email word count ${words} is outside 120-320.` });
@@ -121,6 +121,20 @@ export function validateEmailDraft(input: {
   const personalized = input.topics.some((topic) => input.body.toLowerCase().includes(topic.toLowerCase().slice(0, 16)));
   if (!personalized) {
     failures.push({ code: "not_personalized", message: "Email is not personalized to retrieved research topics." });
+  }
+
+  const evidenceBlob = input.evidenceTexts.join(" ").replace(/\s+/g, " ").trim();
+  if (evidenceBlob.length >= 80 && !input.insufficientEvidence) {
+    const detail = extractGroundedResearchDetail({
+      topics: input.topics,
+      evidenceTexts: input.evidenceTexts,
+    });
+    if (!detail || !draftUsesResearchDetail(input.body, detail)) {
+      failures.push({
+        code: "research_detail_missing",
+        message: "Email does not include a retrieved detail from this professor's research.",
+      });
+    }
   }
 
   return failures;

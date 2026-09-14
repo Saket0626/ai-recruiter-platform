@@ -8,8 +8,10 @@ alwaysApply: false
 
 Every outbound email must pass validation. Every personalized professor claim needs stored supporting evidence.
 
-Personalization must change the opening paragraph, the research-interest paragraph, and the internal relevance explanation. Do not only swap the professor name.
+Use the Saket outreach template in `prompts/email-generation.md`: greeting, first-year UT Dallas CISTech intro, retrieved research topics, a lab-work detail copied from stored evidence, one resume-grounded experience paragraph, a connection paragraph, attached-resume plus spring availability, and `Sincerely, Saket`.
 
-Do not mention relevance scores, URLs, or citations in the email body. Do not use em dashes. Do not claim the student read a paper unless that evidence exists.
+Personalization must change the opening research sentences and the connection paragraph for this professor. Do not only swap the professor name. Do not reuse Huseyin Cavusoglu's economics-of-technology wording unless that claim is in this professor's retrieved evidence.
+
+Writing style: short active sentences, no em dashes, no semicolons, no markdown, no hashtags, no asterisks, no URLs, no citations, no relevance scores. Do not claim the student read a paper unless that evidence exists.
 
 Review Mode is the default. Autopilot may send only when every quality gate passes.

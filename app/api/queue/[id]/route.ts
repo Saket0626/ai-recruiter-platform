@@ -99,6 +99,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         topics,
         researchSummary: draft.professor.researchSummary ?? "",
         student: resume.profile,
+        evidenceTexts: draft.professor.evidence.map((item) => item.extractedText),
       });
       const settings = await getAppSettings();
       const failures = validateEmailDraft({
