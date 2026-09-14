@@ -24,7 +24,8 @@ export async function getAppSettings() {
   const autopilotMin = await getSetting("AUTOPILOT_MIN_SCORE", String(env.AUTOPILOT_MIN_SCORE));
   return {
     AUTO_SEND: autoSend === "true",
-    DRY_RUN: dryRun === "true",
+    // Only the canonical explicit opt-out may disable dry run.
+    DRY_RUN: dryRun !== "false",
     MAX_EMAILS_PER_DAY: Number(maxPerDay),
     PROFESSOR_COOLDOWN_DAYS: Number(cooldown),
     MIN_RELEVANCE_SCORE: Number(minScore),
