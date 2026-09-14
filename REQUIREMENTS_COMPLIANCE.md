@@ -71,7 +71,7 @@ Status: **Implemented** / **Partial** / **Missing** / **Superseded**.
 
 | Gap | Status |
 | --- | --- |
-| Purge `data/resume.pdf` from git history | Implemented (gitignore, untrack, history rewrite, CI check). Public GitHub may still have cached copies. |
+| Purge `data/resume.pdf` from git history | Implemented (gitignore, untrack, history rewrite, `npm test` resume check). Public GitHub may still have cached copies. GitHub Actions was not pushed because the token lacks `workflow` scope. |
 | Playwright fallback | Removed (`PLAYWRIGHT_ENABLED` deleted). Not a fake flag. |
 | robots.txt + SSRF | Implemented with tests. |
 | Quality-gate length 170–270 | Implemented; 320-word draft fails. |

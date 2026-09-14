@@ -18,7 +18,8 @@ This checkpoint:
 
 - Removes the `!/data/resume.pdf` gitignore exception
 - Untracks the file and rewrites git history so the blob is not reachable from current refs
-- Adds `scripts/check-no-user-resume.mjs` (runs in `npm test`) and `.github/workflows/ci.yml`
+- Adds `scripts/check-no-user-resume.mjs` (runs in `npm test`) and `.githooks/pre-commit`
+- A GitHub Actions workflow was prepared but not pushed: the GitHub token lacks `workflow` scope. `npm test` still fails if a user resume is tracked.
 - Treats the public GitHub copy as potentially crawled or cached. Rotating resume contact details is a user decision. Code cannot unsay a public blob.
 
 The real resume belongs only on the local machine and a Railway volume/mount (`RESUME_PATH`). Tests use generated fixtures, not the official PDF.
@@ -47,7 +48,7 @@ The real resume belongs only on the local machine and a Railway volume/mount (`R
 
 - Student-claim grounding is stricter than token overlap, but it is still heuristic (entity leak + upgrade-verb pairs), not a full fact graph.
 - Hosted auth is a shared `APP_ACCESS_SECRET`, not a per-user Google session on every route (documented in README).
-- Concurrent Postgres test is skipped unless `RUN_DB_INTEGRATION=1` (CI workflow starts Postgres).
+- Concurrent Postgres test is skipped unless `RUN_DB_INTEGRATION=1`.
 
 ## Requirements not started / not verified live
 
