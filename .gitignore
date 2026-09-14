@@ -1,0 +1,31 @@
+# Dependencies and builds
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Personal data, resumes, databases, cached pages and OAuth state
+data/*
+!data/README.md
+*.pdf
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+prisma/*.db
+.cache/
+.tokens/
+msal-cache*
+logs/
+*.log
+# OS and editors
+.DS_Store
+.idea/

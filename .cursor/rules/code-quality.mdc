@@ -1,0 +1,6 @@
+---
+description: ResearchReach code-quality constraints
+alwaysApply: true
+---
+
+Inspect user changes before editing. Consult current official docs for uncertain APIs. Commit a lockfile, validate inputs, use bounded retries, sanitize errors, and update progress honestly.
