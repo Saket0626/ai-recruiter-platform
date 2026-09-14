@@ -4,119 +4,100 @@ Date: 2026-09-14
 
 ## Current implementation branch
 
-`cursor/implementation-checkpoint`
+`cursor/implementation-checkpoint` (also fast-forwarded to `main` for Railway)
 
 Remote: https://github.com/Saket0626/ai-recruiter-platform
 
-This checkpoint does **not** merge into `main`. Outlook/Graph is no longer the live sending path. Gmail is.
+Outlook/Graph is not the live sending path. Gmail is.
 
-## Requirements completed (behavior checked in code/tests, not a live send)
+## Resume PDF process correction
+
+`data/resume.pdf` **was** tracked in git (commit `50e90b3`) despite earlier checkpoint text saying it was not. That is a process failure, not a documentation typo.
+
+This checkpoint:
+
+- Removes the `!/data/resume.pdf` gitignore exception
+- Untracks the file and rewrites git history so the blob is not reachable from current refs
+- Adds `scripts/check-no-user-resume.mjs` (runs in `npm test`) and `.github/workflows/ci.yml`
+- Treats the public GitHub copy as potentially crawled or cached. Rotating resume contact details is a user decision. Code cannot unsay a public blob.
+
+The real resume belongs only on the local machine and a Railway volume/mount (`RESUME_PATH`). Tests use generated fixtures, not the official PDF.
+
+## Requirements completed (behavior checked in code/tests)
 
 | Requirement | Evidence |
 | --- | --- |
-| Seeded discovery, evidence storage, scoring, grounded drafts, Review Mode UI | Existing app under `lib/research`, `app/`, `components/` |
-| Resume parsing and quality gates | `lib/resume`, Settings/Dashboard review of parsed facts, `tests/resume-scoring.test.ts` |
-| Approval required before manual send; edits/regenerate revoke approval | `lib/email/send-gate.ts`, `lib/research/pipeline.ts`, `app/api/queue/[id]/route.ts`, `tests/send-gate.test.ts` |
-| Fail-closed `DRY_RUN` / `AUTO_SEND` parsing | Cherry-picked from PR #2: `lib/config/env.ts`, `lib/db/settings.ts`, `tests/dry-run-config.test.ts` |
+| Seeded discovery, evidence storage, scoring, grounded drafts, Review Mode UI | `lib/research`, `app/`, `components/` |
+| Resume parsing and quality gates | `lib/resume`, `tests/resume-scoring.test.ts` |
+| Approval required before manual send; edits/regenerate revoke approval and resume hash | `lib/email/send-gate.ts`, `app/api/queue/[id]/route.ts`, `tests/send-gate.test.ts`, `tests/resume-hash.test.ts` |
+| Fail-closed `DRY_RUN` / `AUTO_SEND` parsing | `lib/config/env.ts`, `lib/db/settings.ts`, `tests/dry-run-config.test.ts` |
 | Dry run does not count as a real contact and does not mark professor `SENT` | `lib/email/rate-limit.ts`, `professorStatusAfterSend` |
-| Hosted access gate | `APP_ACCESS_SECRET`, `middleware.ts`, `/unlock`, `tests/access.test.ts` |
+| Hosted access gate | `APP_ACCESS_SECRET`, `middleware.ts`, `/unlock`, documented in README |
 | `resume:generate` cannot overwrite `data/resume.pdf` | `scripts/generate-resume.ts` writes `data/fixtures/starter-resume.pdf` |
 | Gmail send path with MIME PDF attachment | `lib/email/gmail-provider.ts`, `lib/email/mime.ts`, `tests/gmail.test.ts` |
-| Google OAuth authorization-code + PKCE, `gmail.send` only, allowed sender `saket.amanana@gmail.com` | `lib/google/*`, `app/api/auth/google/*` |
-| Provider selection is Gmail; no Outlook fallback | `lib/email/create-provider.ts`, pipeline uses `createEmailProvider()` |
+| Google OAuth authorization-code + PKCE, `gmail.send` only | `lib/google/*`, `app/api/auth/google/*` |
+| Provider selection is Gmail; no Outlook fallback | `lib/email/create-provider.ts` |
+| SSRF: DNS + IP-literal + redirect re-check | `lib/search/ssrf.ts`, `lib/search/fetch-public.ts`, `tests/ssrf-robots.test.ts` |
+| robots.txt skip + `robots_disallowed` log | `lib/search/robots.ts` |
+| Email length 170–270 words | `lib/validation/email-quality.ts`, `tests/email-generation.test.ts` |
+| Named-project resume claims cannot borrow other-resume skills | `lib/resume/claims.ts`, Wireshark/ChartWise test |
+| Concurrent live-send reservation (advisory lock + unique draft index) | `lib/research/pipeline.ts`, `tests/concurrency.integration.test.ts` (runs when `RUN_DB_INTEGRATION=1`) |
 
 ## Requirements partially implemented
 
-- Claim grounding is still looser than spec (`lib/resume/claims.ts` token/entity matching).
-- SSRF: HTTP(S) fetch exists; no DNS/private/metadata IP blocking yet (`lib/search/seeded-crawler.ts`).
-- Concurrent daily-cap/recipient reservations: draft-level `SUBMITTING` unique index exists; no full concurrent Postgres integration test.
-- Resume hash is not bound to draft approval. The official PDF is on the local machine at gitignored `data/resume.pdf` and is shown on Dashboard/Settings; it is not in GitHub.
-- Hosted auth is a shared app secret, not per-user Google session on every route.
-- robots.txt handling is incomplete.
+- Student-claim grounding is stricter than token overlap, but it is still heuristic (entity leak + upgrade-verb pairs), not a full fact graph.
+- Hosted auth is a shared `APP_ACCESS_SECRET`, not a per-user Google session on every route (documented in README).
+- Concurrent Postgres test is skipped unless `RUN_DB_INTEGRATION=1` (CI workflow starts Postgres).
 
 ## Requirements not started / not verified live
 
-- A real Gmail send (intentionally not done; `DRY_RUN` remains true).
-- Google Cloud OAuth client credentials are not in the repo and are not on Railway yet.
-- Resume PDF is still gitignored and not on Railway.
-- DNS-resolved SSRF tests.
+- Playwright JS crawl is **removed**, not implemented. `PLAYWRIGHT_ENABLED` is gone so the app does not advertise a missing dependency.
+- Automated tests never call live Gmail `users.messages.send`.
+- Google External/Testing refresh tokens still expire after about 7 days until verification/publishing.
 
-## Hosting already done (Railway + Supabase)
+## Hosting (Railway + Supabase)
 
-These are live from earlier work on `main`. This Gmail checkpoint is **not** deployed until this branch is merged or the Railway service is pointed at it.
+**Supabase** project `ai-recruiter-platform` (`vtrjwkinmmhsuomyfrri`), region `us-west-1`. App tables exist. `EmailDraft.resumeSha256` is applied.
 
-**Supabase**
+**Railway** service `web` from GitHub `main`: https://web-production-3b016.up.railway.app
 
-- Project: `ai-recruiter-platform`
-- Ref: `vtrjwkinmmhsuomyfrri`
-- Org: `ubkgnqxcoybgtcnxxvrh`
-- Region: `us-west-1`
-- Status: `ACTIVE_HEALTHY`
-- App tables exist with RLS enabled; `anon`/`authenticated` have no grants on public tables (verified 2026-09-14).
-- `_prisma_migrations` has RLS off; Data API roles have no grants, so it is not anonymously readable.
-- Direct `db.vtrjwkinmmhsuomyfrri.supabase.co:5432` does not resolve on IPv4 locally; use the pooler:
-  - `DATABASE_URL`: `aws-0-us-west-1.pooler.supabase.com:6543` with `sslmode=require&pgbouncer=true`
-  - `DIRECT_URL`: pooler `:5432` for migrations
-- New tables in this branch (`GoogleAuthAccount`, send reservation index) apply on `prisma migrate deploy` of this branch. They are not on production `main` yet.
+After this history rewrite, the resume is **not** in the Docker image. Set `RESUME_PATH` to a mounted file and upload the PDF there before live sending.
 
-**Railway**
-
-- Project: `ai-recruiter-platform` (`1151058f-9547-4cec-80da-18a6814f4a28`)
-- Service: `web` from GitHub `main`
-- Live URL: https://web-production-3b016.up.railway.app (HTTP 200 after the pgbouncer/Docker fixes)
-- `DRY_RUN=true`, `AUTO_SEND=false`
-- Docker uses `npm install --ignore-scripts` in the deps stage because `npm ci` failed on Alpine/npm 10, and Prisma generate needs the schema copied first
-- Resume PDF is not on Railway; sending stays disabled without it
-- After this branch is deployed, set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI=https://<actual-host>/api/auth/google/callback`, `GOOGLE_ALLOWED_EMAIL=saket.amanana@gmail.com`, and `APP_ACCESS_SECRET`. Do not paste those values into GitHub.
+Do not paste Google client secrets or `APP_ACCESS_SECRET` into GitHub.
 
 ## Known bugs and blockers
 
-- Google Cloud OAuth client is not created yet. Connect Gmail cannot succeed until the user adds a Web client and env vars.
-- External/Testing Gmail apps generally expire refresh tokens after 7 days until verification/publishing.
 - Next.js 16 warns that `middleware.ts` should migrate to `proxy`; access gating still works.
-- Optional Playwright crawl warns `Can't resolve 'playwright'` at build time; it is disabled unless `PLAYWRIGHT_ENABLED=true`.
+- Local Docker Desktop was not available in this checkpoint, so the concurrent send test was not executed against a local Postgres (CI is set up to run it).
 
 ## Validation commands
 
 Ran 2026-09-14 on `cursor/implementation-checkpoint`:
 
 ```
-npm test
+npx tsc --noEmit
 ```
 
-Result: **10 files, 86 tests passed**. Includes `tests/dry-run-config.test.ts`, `tests/send-gate.test.ts`, `tests/gmail.test.ts`. No real email sent. Google/Gmail transport mocked.
+Result: **passed**.
 
 ```
-npm run typecheck
+npx eslint .
 ```
 
-Result: **passed** (`tsc --noEmit`).
+Result: **passed** (0 errors).
 
 ```
-npm run lint
+npx vitest run
 ```
 
-Result: **passed** after unused-arg fix (0 errors).
+Result: **13 files passed, 1 skipped** (`tests/concurrency.integration.test.ts` without `RUN_DB_INTEGRATION`). **102 tests passed**, 1 skipped. Gmail/OAuth/transport mocked. No real email sent.
 
 ```
 npm run build
 ```
 
-Result: **passed** (`next build`). Routes include `/api/auth/google` and `/api/auth/google/callback`. Playwright optional-import warning only.
-
-Checks not run:
-
-- Live Gmail `users.messages.send` (forbidden while `DRY_RUN=true` and during automated tests)
-- `prisma migrate deploy` against production (this branch is not `main`)
-- Browser click-through of Google consent (blocked until Google client credentials exist)
+Result: **passed** (`prisma generate && next build`). Playwright optional-import warning is gone. `LayoutProps` was replaced with `React.ReactNode` so typecheck does not depend on generated Next types.
 
 ## Next subsystem
 
-Resume hash/version bound to draft approval, then SSRF defenses. ChatGPT cannot copy the official PDF; ask it only for parser/hash patches against pushed tests.
-
-## Bounded tasks for ChatGPT
-
-1. Review `lib/google/oauth.ts` and `app/api/auth/google/callback/route.ts` for one-use state, PKCE, ID-token audience/issuer/expiry/nonce, and wrong-account non-replacement.
-2. Propose a bounded `codex/*` patch that hashes `data/resume.pdf` and invalidates draft approvals when the file changes. Do not add the PDF to git. Tests should use a fixture PDF only.
-3. Review `lib/resume/parser.ts` against `tests/resume-scoring.test.ts` official-layout fixture (internship vs project split, hyphen-wrapped bullets). Do not request the real resume file.
-4. Do **not** switch sending back to Outlook. Do **not** request `gmail.readonly`. You cannot create Google Cloud OAuth clients, deploy Railway, or send email.
+Keep Gmail. Do not switch back to Outlook. After Railway deploys the cleaned history, mount the official resume and re-run Discover.

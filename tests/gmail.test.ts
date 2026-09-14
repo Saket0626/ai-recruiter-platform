@@ -47,7 +47,6 @@ beforeEach(() => {
   vi.stubEnv("DRY_RUN", "true");
   vi.stubEnv("AUTO_SEND", "false");
   vi.stubEnv("GUESS_EMAILS", "false");
-  vi.stubEnv("PLAYWRIGHT_ENABLED", "false");
   vi.stubEnv("EMAIL_PROVIDER", "gmail");
   vi.stubEnv("GOOGLE_ALLOWED_EMAIL", "saket.amanana@gmail.com");
   resetEnvCache();

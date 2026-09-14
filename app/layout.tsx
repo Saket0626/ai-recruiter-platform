@@ -18,7 +18,11 @@ export const metadata: Metadata = {
   description: "Evidence-grounded undergraduate research outreach",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full bg-paper text-ink">

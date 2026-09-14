@@ -6,7 +6,7 @@ import type { StudentProfile } from "@/lib/validation/schemas";
 
 export function resolveResumePath(override?: string) {
   const configured = override || getEnv().RESUME_PATH;
-  return path.isAbsolute(configured) ? configured : path.join(process.cwd(), configured);
+  return path.isAbsolute(configured) ? configured : path.join(/* turbopackIgnore: true */ process.cwd(), configured);
 }
 
 export function resumeExists(resumePath = resolveResumePath()) {

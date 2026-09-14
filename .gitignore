@@ -49,4 +49,4 @@ next-env.d.ts
 /prisma/dev.db-journal
 /data/token-cache.enc
 /data/*.pdf
-!/data/resume.pdf
+!/data/fixtures/*.pdf

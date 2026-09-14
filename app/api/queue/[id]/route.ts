@@ -3,7 +3,8 @@ import { prisma } from "@/lib/db/prisma";
 import { publicError } from "@/lib/security/errors";
 import { requireMutatingAccess } from "@/lib/security/access";
 import { generateGroundedEmail } from "@/lib/email/generator";
-import { loadStudentProfile } from "@/lib/resume/service";
+import { loadStudentProfile, resolveResumePath, resumeExists } from "@/lib/resume/service";
+import { hashResumePdf } from "@/lib/resume/hash";
 import { sendApprovedDraft } from "@/lib/research/pipeline";
 import { logger } from "@/lib/logging/logger";
 import { validateEmailDraft } from "@/lib/validation/email-quality";
@@ -51,6 +52,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       body: text,
       status: failures.length ? "VALIDATION_FAILED" : "QUEUED",
       approvedAt: null,
+      resumeSha256: null,
       validationPassed: failures.length === 0,
       validationErrors: JSON.stringify(failures),
       failureReason: failures[0]?.message,
@@ -73,9 +75,14 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       if (!["QUEUED", "APPROVED"].includes(draft.status) || !draft.validationPassed) {
         return NextResponse.json({ error: "Only validated queued drafts can be approved." }, { status: 400 });
       }
+      const resumePath = resolveResumePath();
+      if (!resumeExists(resumePath)) {
+        return NextResponse.json({ error: "Resume PDF is missing. Sending is disabled." }, { status: 400 });
+      }
+      const resumeHash = await hashResumePdf(resumePath);
       const updated = await prisma.emailDraft.update({
         where: { id },
-        data: { status: "APPROVED", approvedAt: new Date() },
+        data: { status: "APPROVED", approvedAt: new Date(), resumeSha256: resumeHash },
       });
       await prisma.professor.update({ where: { id: draft.professorId }, data: { status: "APPROVED" } });
       logger.info("approval", { draftId: id, professorId: draft.professorId });
@@ -84,7 +91,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     if (action === "reject") {
       const updated = await prisma.emailDraft.update({
         where: { id },
-        data: { status: "REJECTED", rejectedAt: new Date(), approvedAt: null },
+        data: { status: "REJECTED", rejectedAt: new Date(), approvedAt: null, resumeSha256: null },
       });
       await prisma.professor.update({ where: { id: draft.professorId }, data: { status: "REJECTED" } });
       return NextResponse.json({ draft: updated });
@@ -128,6 +135,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
           status: failures.length ? "VALIDATION_FAILED" : "QUEUED",
           failureReason: failures[0]?.message,
           approvedAt: null,
+          resumeSha256: null,
         },
       });
       return NextResponse.json({ draft: updated });

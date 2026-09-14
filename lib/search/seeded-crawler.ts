@@ -1,7 +1,7 @@
-import { USER_AGENT } from "@/lib/config/defaults";
 import { getEnv } from "@/lib/config/env";
-import { logger } from "@/lib/logging/logger";
 import { extractFacultyFromDirectory, extractVisibleText } from "@/lib/research/parser";
+import { fetchPublicHtml } from "@/lib/search/fetch-public";
+import { isUrlAllowedByRobots } from "@/lib/search/robots";
 import type { FacultySearchQuery, SearchProvider, SearchResult } from "@/lib/search/provider";
 import { normalizeUrl } from "@/lib/security/email";
 
@@ -9,22 +9,7 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function fetchPublicHtml(url: string): Promise<{ ok: boolean; url: string; html: string; status: number }> {
-  try {
-    const response = await fetch(url, {
-      headers: { "User-Agent": USER_AGENT, Accept: "text/html,application/xhtml+xml" },
-      redirect: "follow",
-    });
-    const html = await response.text();
-    if (!response.ok) {
-      return { ok: false, url, html: "", status: response.status };
-    }
-    return { ok: true, url: response.url || url, html, status: response.status };
-  } catch (error) {
-    logger.warn("crawl_fetch_failed", { url, error: error instanceof Error ? error.message : "fetch failed" });
-    return { ok: false, url, html: "", status: 0 };
-  }
-}
+export { fetchPublicHtml };
 
 export class SeededCrawlerSearchProvider implements SearchProvider {
   readonly name = "seeded-crawler";
@@ -39,6 +24,8 @@ export class SeededCrawlerSearchProvider implements SearchProvider {
       const normalized = normalizeUrl(seed);
       if (!normalized || seen.has(normalized)) continue;
       seen.add(normalized);
+      const allowed = await isUrlAllowedByRobots(normalized);
+      if (!allowed) continue;
       await sleep(delay);
       const page = await fetchPublicHtml(normalized);
       if (!page.ok) continue;

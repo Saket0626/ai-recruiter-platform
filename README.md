@@ -100,7 +100,18 @@ The app deploys to Railway with the Dockerfile in this repo.
 3. Set `GOOGLE_REDIRECT_URI` to `https://<the-actual-Railway-host>/api/auth/google/callback` using the URL Railway assigned. Do not guess a domain. The current live host, if unchanged, is `https://web-production-3b016.up.railway.app`.
 4. `DRY_RUN` stays true until you turn it off. Production refuses anonymous access unless `APP_ACCESS_SECRET` is set and the operator unlocks the app. Connecting Gmail does not send a test email.
 
-The resume PDF is not in git. Upload it to the service (or set `RESUME_PATH` to a mounted file) before live sending. Without a resume, sending stays disabled.
+The resume PDF is not in git and must never be committed. Upload it to the service (or set `RESUME_PATH` to a mounted file such as `/app/resume-data/resume.pdf`) before live sending. Without a resume, sending stays disabled.
+
+## Access gate
+
+`/unlock` is a real access-control feature, not a stand-in for Gmail login. Hosted ResearchReach can hold a live Gmail send grant, so the app is not left open on the public Railway URL.
+
+- Set `APP_ACCESS_SECRET` in `.env.local` (local, optional) and in Railway (required in production).
+- Open `/unlock`, enter that passcode, then continue. The browser stores an `rr_gate` cookie.
+- Change the passcode by rotating `APP_ACCESS_SECRET` and unlocking again. Old cookies stop working.
+- This is a **shared operator secret** for a single-user tool. It is not a per-user Google session on every route. Gmail OAuth still verifies `saket.amanana@gmail.com` before sending.
+
+Local development with `APP_ACCESS_SECRET` empty skips the gate so `npm run dev` works without unlocking.
 
 ## Resume
 

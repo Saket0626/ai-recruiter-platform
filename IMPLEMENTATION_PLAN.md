@@ -13,39 +13,38 @@ This file is a requirements checklist against the running ResearchReach app, not
 - [x] Implement local resume parsing, source facts, and attachment presence checks.
 - [x] Implement seeded crawling plus configurable search, caching, and crawl delay.
 - [x] Implement faculty extraction, evidence storage, grounded structured analysis, relevance scoring.
-- [x] Implement personalized draft generation and quality gates (with remaining claim-strictness gaps).
+- [x] Implement personalized draft generation and quality gates.
 - [x] Implement Google OAuth/token storage and Gmail MIME send (Outlook sending is disabled).
 - [x] Implement dashboard, discovery progress, evidence views, queue edits/approval, history, settings.
 - [x] Keep Review Mode default, `DRY_RUN=true`, `AUTO_SEND=false`, fail-closed malformed safety flags.
-- [x] Add offline unit tests covering parsing, Graph payload, dry-run config, approval gate, cooldown math.
+- [x] Add offline unit tests covering parsing, Gmail MIME, dry-run config, approval gate, cooldown math, SSRF, robots, resume hash.
 - [x] Run typecheck, lint, tests, and production build for this checkpoint (see `CHECKPOINT.md`).
-- [x] Document install, Google Cloud/Gmail, Railway, and Supabase setup in README.
+- [x] Document install, Google Cloud/Gmail, Railway, unlock gate, and Supabase setup in README.
+- [x] SSRF defenses after DNS and on redirects.
+- [x] robots.txt fetch/parse/cache and skip disallowed URLs.
+- [x] Bind draft approval to SHA-256 of the current resume PDF.
+- [x] Tighten named-project resume claims so they cannot borrow unrelated skills.
+- [x] Narrow email quality-gate length to 170–270 words.
+- [x] Remove advertised Playwright crawl (dependency was never installed).
+- [x] Stop tracking `data/resume.pdf` and add a CI/test check so it cannot be committed again.
 
 ## Partially implemented
 
-- [ ] SSRF defenses after DNS and on redirects (HTTP(S) fetch exists; private/metadata IP blocking is not implemented).
-- [ ] Claim support checks: student-claim matching is still token/entity based and too loose for some sentences.
-- [ ] Duplicate/rate reservations: SUBMITTING rows now reserve a draft and count toward the daily cap; concurrent unique index added. Recipient-level unique reservation is not complete.
-- [ ] Resume hash/version bound to draft approval and attachment hashing.
-- [ ] Hosted caller authorization: shared `APP_ACCESS_SECRET` gate, not per-user Microsoft session auth on every route.
-- [ ] Autopilot fail-closed gates exist; concurrent autopilot send races still need stronger DB constraints.
-- [ ] Playwright optional JS crawl exists behind `PLAYWRIGHT_ENABLED` but is untested in this checkpoint.
-- [ ] Discovery robots.txt handling is incomplete.
+- [ ] Student-claim matching is entity-leak + upgrade-verb based, not a full per-fact mapping.
+- [ ] Hosted caller authorization: shared `APP_ACCESS_SECRET` gate, not per-user Google session auth on every route (documented choice).
+- [ ] Concurrent autopilot/live-send race: advisory lock + unique draft index exist; integration test requires `RUN_DB_INTEGRATION=1`.
 
 ## Not started or not verified
 
-- [ ] Full concurrent rate-limit integration tests against Postgres.
-- [ ] DNS-resolved SSRF tests and redirect revalidation.
-- [ ] Live Graph send of a user-approved email (intentionally not done; `DRY_RUN` remains true).
-- [ ] Resume PDF is not on Railway; live sending remains disabled there.
+- [ ] Live Gmail send in automated tests (forbidden).
+- [ ] Official resume file on Railway after git-history cleanup (must be mounted by the operator).
 
 ## User-dependent setup
 
-- [ ] Supply the actual resume PDF locally; it is not in this repository.
+- [ ] Keep the official resume on disk locally at `data/resume.pdf` (gitignored) and mount it on Railway.
 - [ ] Confirm current student profile and availability.
 - [ ] Configure model/search providers as needed.
-- [ ] Register/configure Microsoft application, add the Railway redirect URI, and complete account-holder consent.
-- [ ] Set `APP_ACCESS_SECRET` on Railway after this branch is deployed, then unlock the hosted UI.
-- [ ] Review the first draft before intentionally enabling any real sending.
+- [ ] Keep the Google Cloud OAuth client and Gmail API enabled; reconnect when the 7-day testing token expires.
+- [ ] Review drafts before leaving live sending enabled.
 
 Do not mark a box complete merely because code was generated. Record verification evidence and blockers in `CHECKPOINT.md`.

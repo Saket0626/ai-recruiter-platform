@@ -75,6 +75,7 @@ model EmailDraft {
   failureReason      String?
   createdAt          DateTime  @default(now())
   approvedAt         DateTime?
+  resumeSha256       String?
   rejectedAt         DateTime?
   sentAt             DateTime?
   professor          Professor     @relation(fields: [professorId], references: [id], onDelete: Cascade)

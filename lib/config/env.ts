@@ -35,7 +35,6 @@ const envSchema = z.object({
   AUTO_SEND: booleanFromEnv.default(false),
   GUESS_EMAILS: booleanFromEnv.default(false),
   DRY_RUN: booleanFromEnv.default(true),
-  PLAYWRIGHT_ENABLED: booleanFromEnv.default(false),
   CRAWL_DELAY_MS: z.coerce.number().int().nonnegative().default(1000),
   APP_ACCESS_SECRET: z.string().optional().default(""),
   EMAIL_PROVIDER: z.enum(["gmail"]).default("gmail"),

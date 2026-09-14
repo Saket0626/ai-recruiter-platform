@@ -42,6 +42,17 @@ describe("resume and scoring", () => {
     expect(isResumeSupportedClaim("I recently helped with the development of the ClinicalHours website.", profile).ok).toBe(true);
   });
 
+  it("rejects a ChartWise claim that borrows Wireshark from elsewhere in the resume", () => {
+    // Previously the named-entity short-circuit treated any ChartWise mention as supported
+    // because Wireshark appears in the skills blob. The claim must match ChartWise's own summary.
+    const result = isResumeSupportedClaim(
+      "I used Wireshark in ChartWise to inspect market data packets across the trading pipeline.",
+      profile,
+    );
+    expect(result.ok).toBe(false);
+    expect(result.reason).toMatch(/Wireshark/i);
+  });
+
   it("validates structured professor analysis with Zod", () => {
     const parsed = professorAnalysisSchema.parse({
       research_topics: ["program analysis"],

@@ -6,3 +6,8 @@ node_modules
 prisma/dev.db
 *.md
 !README.md
+data/resume.pdf
+data/*.pdf
+!data/fixtures/*.pdf
+.env
+.env.local

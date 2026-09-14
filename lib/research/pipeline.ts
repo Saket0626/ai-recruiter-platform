@@ -11,8 +11,9 @@ import { scoreProfessorRelevance } from "@/lib/research/scorer";
 import { CompositeSearchProvider } from "@/lib/search/composite";
 import { generateGroundedEmail } from "@/lib/email/generator";
 import { createEmailProvider } from "@/lib/email/create-provider";
-import { dailyCapReached, isInCooldown, jitterDelayMs } from "@/lib/email/rate-limit";
+import { dailyCapReached, isInCooldown, jitterDelayMs, sentCountToday } from "@/lib/email/rate-limit";
 import { assertDraftSendable, professorStatusAfterSend } from "@/lib/email/send-gate";
+import { hashResumePdf } from "@/lib/resume/hash";
 import { loadStudentProfile, resolveResumePath, resumeExists } from "@/lib/resume/service";
 import { isGenericInbox, normalizeEmail, normalizeUrl } from "@/lib/security/email";
 import { resolveUniversitySelections, type ResolvedUniversity } from "@/lib/universities/catalog";
@@ -459,14 +460,17 @@ export async function sendApprovedDraft(draftId: string, options?: { autopilot?:
   });
   if (!draft) throw new Error("Draft not found");
   const settings = await getAppSettings();
+  const resumePath = resolveResumePath();
+  const resume = await loadStudentProfile(resumePath);
+  if (!resume.ok) throw new Error(resume.error);
+  const currentResumeSha256 = await hashResumePdf(resumePath);
   assertDraftSendable({
     status: draft.status,
     autopilot: options?.autopilot,
     autoSend: settings.AUTO_SEND,
+    resumeSha256: draft.resumeSha256,
+    currentResumeSha256,
   });
-  const resumePath = resolveResumePath();
-  const resume = await loadStudentProfile(resumePath);
-  if (!resume.ok) throw new Error(resume.error);
 
   if (await dailyCapReached()) {
     throw new Error(`Daily email cap of ${settings.MAX_EMAILS_PER_DAY} has been reached.`);
@@ -498,32 +502,45 @@ export async function sendApprovedDraft(draftId: string, options?: { autopilot?:
         validationErrors: JSON.stringify(failures),
         failureReason: failures.map((item) => item.message).join(" "),
         approvedAt: null,
+        resumeSha256: null,
       },
     });
     throw new Error(failures[0]?.message ?? "Quality gate failed");
   }
   if (!draft.professor.email) throw new Error("Professor email is missing.");
 
-  const existingSend = await prisma.emailSend.findFirst({
-    where: { draftId: draft.id, status: { in: ["SENT", "DRY_RUN", "SUBMITTING", "UNKNOWN"] } },
-  });
-  if (existingSend) {
-    throw new Error("This draft already has a send attempt. Open Sent history instead of retrying blindly.");
-  }
-
   let reservation;
   try {
-    reservation = await prisma.emailSend.create({
-      data: {
-        professorId: draft.professorId,
-        draftId: draft.id,
-        recipient: draft.professor.email,
-        recipientNormalized: normalizeEmail(draft.professor.email),
-        subject: draft.subject,
-        body: draft.body,
-        status: "SUBMITTING",
-        dryRun: settings.DRY_RUN,
-      },
+    reservation = await prisma.$transaction(async (tx) => {
+      if (!settings.DRY_RUN) {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('researchreach-daily-send'))`;
+        const sentToday = await sentCountToday(tx);
+        if (sentToday >= settings.MAX_EMAILS_PER_DAY) {
+          throw new Error(`Daily email cap of ${settings.MAX_EMAILS_PER_DAY} has been reached.`);
+        }
+      }
+      await tx.$queryRaw`SELECT id FROM "Professor" WHERE id = ${draft.professorId} FOR UPDATE`;
+      if (draft.professor.email && (await isInCooldown(draft.professor.email, tx))) {
+        throw new Error("This professor was contacted within the cooldown window.");
+      }
+      const existingSend = await tx.emailSend.findFirst({
+        where: { draftId: draft.id, status: { in: ["SENT", "DRY_RUN", "SUBMITTING", "UNKNOWN"] } },
+      });
+      if (existingSend) {
+        throw new Error("This draft already has a send attempt. Open Sent history instead of retrying blindly.");
+      }
+      return tx.emailSend.create({
+        data: {
+          professorId: draft.professorId,
+          draftId: draft.id,
+          recipient: draft.professor.email!,
+          recipientNormalized: normalizeEmail(draft.professor.email!),
+          subject: draft.subject,
+          body: draft.body,
+          status: "SUBMITTING",
+          dryRun: settings.DRY_RUN,
+        },
+      });
     });
   } catch (error) {
     if (isUniqueConflict(error)) {

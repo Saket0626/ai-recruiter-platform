@@ -8,8 +8,15 @@ describe("send approval gate", () => {
     expect(() => assertDraftSendable({ status: "VALIDATION_FAILED", autoSend: false })).toThrow(/quality gate/i);
   });
 
-  it("allows approved drafts in review mode", () => {
-    expect(() => assertDraftSendable({ status: "APPROVED", autoSend: false })).not.toThrow();
+  it("allows approved drafts in review mode when the resume hash matches", () => {
+    expect(() =>
+      assertDraftSendable({
+        status: "APPROVED",
+        autoSend: false,
+        resumeSha256: "abc",
+        currentResumeSha256: "abc",
+      }),
+    ).not.toThrow();
   });
 
   it("blocks autopilot when AUTO_SEND is false", () => {

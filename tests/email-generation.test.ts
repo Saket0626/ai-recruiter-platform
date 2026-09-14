@@ -103,8 +103,8 @@ describe("email generation and quality gates", () => {
       insufficientEvidence: false,
     });
     expect(cavusogluFailures.map((item) => item.code)).toEqual([]);
-    expect(wordCount(cavusoglu.body)).toBeGreaterThanOrEqual(120);
-    expect(wordCount(cavusoglu.body)).toBeLessThanOrEqual(320);
+    expect(wordCount(cavusoglu.body)).toBeGreaterThanOrEqual(170);
+    expect(wordCount(cavusoglu.body)).toBeLessThanOrEqual(270);
     expect(
       extractGroundedResearchDetail({
         topics: ["information systems", "information security and privacy"],
@@ -201,6 +201,39 @@ describe("email generation and quality gates", () => {
     });
     expect(failures.some((item) => item.code === "generic_inbox")).toBe(true);
     expect(failures.some((item) => item.code === "missing_resume")).toBe(true);
+  });
+
+  it("rejects a 320-word draft that the old 120-320 band would have allowed", () => {
+    const draft = generateGroundedEmail({
+      professorLastName: "Hamlen",
+      professorFullName: "Kevin Hamlen",
+      topics: ["software security"],
+      researchSummary: "software security",
+      student,
+      evidenceTexts: [
+        "The lab investigates binary rewriting defenses against return-oriented programming attacks. Software security and program analysis are used to harden binaries.",
+      ],
+    });
+    const padding = Array.from({ length: 200 }, () => "security").join(" ");
+    const body = `${draft.body}\n${padding}`;
+    expect(wordCount(body)).toBeGreaterThan(320);
+    const failures = validateEmailDraft({
+      professorName: "Kevin Hamlen",
+      professorEmail: "hamlen@utdallas.edu",
+      subject: draft.subject,
+      body,
+      topics: ["software security"],
+      evidenceTexts: [
+        "The lab investigates binary rewriting defenses against return-oriented programming attacks. Software security and program analysis are used to harden binaries.",
+      ],
+      evidenceUrls: ["https://cs.utdallas.edu/hamlen"],
+      student,
+      resumeAvailable: true,
+      relevanceScore: 80,
+      minScore: 65,
+      insufficientEvidence: false,
+    });
+    expect(failures.some((item) => item.code === "length")).toBe(true);
   });
 
   it("marks insufficient evidence from hostile or empty pages", () => {

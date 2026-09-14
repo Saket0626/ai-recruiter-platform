@@ -12,7 +12,6 @@ beforeEach(() => {
   vi.stubEnv("DRY_RUN", "true");
   vi.stubEnv("AUTO_SEND", "false");
   vi.stubEnv("GUESS_EMAILS", "false");
-  vi.stubEnv("PLAYWRIGHT_ENABLED", "false");
   resetEnvCache();
   findUnique.mockReset();
   findUnique.mockResolvedValue(null);
