@@ -123,7 +123,11 @@ export async function redeemGoogleAuthCode(input: { code: string; codeVerifier: 
 }
 
 export async function getGoogleAccount() {
-  return prisma.googleAuthAccount.findUnique({ where: { id: GOOGLE_ACCOUNT_ID } });
+  try {
+    return await prisma.googleAuthAccount.findUnique({ where: { id: GOOGLE_ACCOUNT_ID } });
+  } catch {
+    return null;
+  }
 }
 
 export async function acquireGmailAccessToken() {

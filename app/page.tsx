@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { sentCountToday } from "@/lib/email/rate-limit";
 import { loadStudentProfile } from "@/lib/resume/service";
 import { getAppSettings } from "@/lib/db/settings";
+import { ResumeProfile } from "@/components/ResumeProfile";
 import { StatCard } from "@/components/StatCard";
 import { getGoogleConnectionView } from "@/lib/google/oauth";
 
@@ -45,7 +46,10 @@ export default async function DashboardPage() {
         <div className="rr-card p-5">
           <h2 className="font-semibold">Resume</h2>
           {resume.ok ? (
-            <p className="mt-2 text-sm text-muted">Loaded from {resume.profile.resumePath}. Sending can attach this PDF.</p>
+            <>
+              <p className="mt-2 text-sm text-muted">Loaded from {resume.profile.resumePath}. Sending attaches this PDF.</p>
+              <ResumeProfile profile={resume.profile} />
+            </>
           ) : (
             <p className="mt-2 text-sm text-[#9f1239]">{resume.error}</p>
           )}

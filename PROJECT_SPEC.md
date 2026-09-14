@@ -4,7 +4,7 @@
 
 Build a local-first application for Saket to discover relevant professors, retrieve research evidence, compare it to his confirmed background, draft personalized undergraduate research-interest emails, attach his real resume, and send approved messages through Gmail (`saket.amanana@gmail.com`).
 
-This document consolidates the user's earlier build brief and subsequent resume corrections. Sending uses Gmail (`saket.amanana@gmail.com`) rather than Outlook; that user requirement supersedes the Outlook-specific section below. It specifies intended behavior, not features already implemented. No fake professor records outside tests. No placeholder resume or simulated feature presented as real.
+This document consolidates the user's earlier build brief and subsequent resume corrections. Sending uses Gmail (`saket.amanana@gmail.com`) rather than Outlook; `GMAIL_SETUP.md` is the current account-setup checklist. The Outlook-specific section below is historical. It specifies intended behavior, not features already implemented. No fake professor records outside tests. No placeholder resume or simulated feature presented as real.
 
 ## Architecture
 

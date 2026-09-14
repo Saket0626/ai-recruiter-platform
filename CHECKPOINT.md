@@ -15,7 +15,7 @@ This checkpoint does **not** merge into `main`. Outlook/Graph is no longer the l
 | Requirement | Evidence |
 | --- | --- |
 | Seeded discovery, evidence storage, scoring, grounded drafts, Review Mode UI | Existing app under `lib/research`, `app/`, `components/` |
-| Resume parsing and quality gates | `lib/resume`, `lib/validation/email-quality.ts` |
+| Resume parsing and quality gates | `lib/resume`, Settings/Dashboard review of parsed facts, `tests/resume-scoring.test.ts` |
 | Approval required before manual send; edits/regenerate revoke approval | `lib/email/send-gate.ts`, `lib/research/pipeline.ts`, `app/api/queue/[id]/route.ts`, `tests/send-gate.test.ts` |
 | Fail-closed `DRY_RUN` / `AUTO_SEND` parsing | Cherry-picked from PR #2: `lib/config/env.ts`, `lib/db/settings.ts`, `tests/dry-run-config.test.ts` |
 | Dry run does not count as a real contact and does not mark professor `SENT` | `lib/email/rate-limit.ts`, `professorStatusAfterSend` |
@@ -30,7 +30,7 @@ This checkpoint does **not** merge into `main`. Outlook/Graph is no longer the l
 - Claim grounding is still looser than spec (`lib/resume/claims.ts` token/entity matching).
 - SSRF: HTTP(S) fetch exists; no DNS/private/metadata IP blocking yet (`lib/search/seeded-crawler.ts`).
 - Concurrent daily-cap/recipient reservations: draft-level `SUBMITTING` unique index exists; no full concurrent Postgres integration test.
-- Resume hash is not bound to draft approval.
+- Resume hash is not bound to draft approval. The official PDF is on the local machine at gitignored `data/resume.pdf` and is shown on Dashboard/Settings; it is not in GitHub.
 - Hosted auth is a shared app secret, not per-user Google session on every route.
 - robots.txt handling is incomplete.
 
@@ -112,11 +112,11 @@ Checks not run:
 
 ## Next subsystem
 
-SSRF defenses and stricter resume/professor claim mappings, while ChatGPT reviews the Gmail OAuth/MIME work.
+Resume hash/version bound to draft approval, then SSRF defenses. ChatGPT cannot copy the official PDF; ask it only for parser/hash patches against pushed tests.
 
 ## Bounded tasks for ChatGPT
 
 1. Review `lib/google/oauth.ts` and `app/api/auth/google/callback/route.ts` for one-use state, PKCE, ID-token audience/issuer/expiry/nonce, and wrong-account non-replacement.
-2. Review `lib/email/mime.ts` + `tests/gmail.test.ts` for RFC 2822/base64url correctness. Suggest a tighter MIME parser only if the current decoder can miss a valid attachment we generate.
-3. Do **not** switch sending back to Outlook. Do **not** request `gmail.readonly` / compose / full mailbox scopes.
-4. If proposing a patch, keep it on a `codex/*` branch against this implementation, not `main`.
+2. Propose a bounded `codex/*` patch that hashes `data/resume.pdf` and invalidates draft approvals when the file changes. Do not add the PDF to git. Tests should use a fixture PDF only.
+3. Review `lib/resume/parser.ts` against `tests/resume-scoring.test.ts` official-layout fixture (internship vs project split, hyphen-wrapped bullets). Do not request the real resume file.
+4. Do **not** switch sending back to Outlook. Do **not** request `gmail.readonly`. You cannot create Google Cloud OAuth clients, deploy Railway, or send email.

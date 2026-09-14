@@ -25,9 +25,11 @@ describe("resume and scoring", () => {
   const profile = parseResumeText(resumeText, "data/resume.pdf");
 
   it("parses projects and skills from resume text", () => {
+    expect(profile.experiences.map((item) => item.organization)).toEqual(expect.arrayContaining(["ClinicalHours"]));
     expect(profile.projects.map((project) => project.name)).toEqual(
-      expect.arrayContaining(["ClinicalHours", "Canvas Companion", "ChartWise", "Cloud of Goods"]),
+      expect.arrayContaining(["Canvas Companion", "ChartWise", "Cloud of Goods"]),
     );
+    expect(profile.projects.map((project) => project.name)).not.toContain("ClinicalHours");
     expect(profile.technicalSkills).toEqual(expect.arrayContaining(["Python", "TypeScript", "Wireshark"]));
   });
 
@@ -62,6 +64,40 @@ describe("resume and scoring", () => {
       hasCurrentActivity: false,
     });
     expect(scored.score).toBeLessThan(65);
+  });
+
+  it("parses internships and project bullets from the official resume layout", () => {
+    const official = parseResumeText(
+      `SAKET AMANANA
+Education
+The University of Texas at Dallas Richardson, TX
+B.S. Computer Information Systems and Technology, Minor in Cybersecurity Expected May 2029
+Relevant Experience
+ClinicalHours May 2026 – Present
+Software Engineer Intern Dallas, TX
+• Built React/TypeScript interfaces for students to search clinical opportunities, view facility details, and submit appli-
+cations across desktop and mobile.
+Cloud of Goods June 2025 – August 2025
+GTM Engineer Intern Orlando, FL
+• Analyzed customer and product data across transportation and stroller-rental categories.
+Projects
+Canvas Companion | TypeScript, Chrome Extension
+• Launched a public Chrome extension consolidating Canvas deadlines and syllabus data into one side-panel calendar.
+ChartWise | React, TypeScript, Postgres
+• Built a React, TypeScript, and Postgres platform on Railway/Supabase to manage trading lessons.
+Technical Skills
+Languages Python, Java, SQL, JavaScript/TypeScript, HTML/CSS
+`,
+      "data/resume.pdf",
+    );
+    expect(official.name).toMatch(/Saket/i);
+    expect(official.minor).toMatch(/Cybersecurity/i);
+    expect(official.experiences.map((item) => item.organization)).toEqual(["ClinicalHours", "Cloud of Goods"]);
+    expect(official.experiences[0]?.role).toMatch(/Software Engineer Intern/i);
+    expect(official.experiences[0]?.summary).toMatch(/Built React\/TypeScript interfaces/i);
+    expect(official.experiences[0]?.summary).toMatch(/applications across desktop and mobile/i);
+    expect(official.projects.map((item) => item.name)).toEqual(["Canvas Companion", "ChartWise"]);
+    expect(official.projects.map((item) => item.name)).not.toContain("ClinicalHours");
   });
 
   it("scores AI and security research more highly", () => {

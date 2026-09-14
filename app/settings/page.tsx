@@ -1,6 +1,7 @@
 import { getAppSettings } from "@/lib/db/settings";
 import { getGoogleConnectionView } from "@/lib/google/oauth";
 import { loadStudentProfile } from "@/lib/resume/service";
+import { ResumeProfile } from "@/components/ResumeProfile";
 import { SettingsForm } from "@/components/SettingsForm";
 
 export const dynamic = "force-dynamic";
@@ -60,7 +61,10 @@ export default async function SettingsPage({
       <section className="rr-card p-5">
         <h2 className="font-semibold">Resume</h2>
         {resume.ok ? (
-          <p className="mt-2 text-sm text-muted">Using {resume.profile.resumePath}. Claims in generated emails are checked against this PDF.</p>
+          <>
+            <p className="mt-2 text-sm text-muted">Using {resume.profile.resumePath}. Outbound emails attach this PDF.</p>
+            <ResumeProfile profile={resume.profile} />
+          </>
         ) : (
           <p className="mt-2 text-sm text-[#9f1239]">{resume.error}</p>
         )}

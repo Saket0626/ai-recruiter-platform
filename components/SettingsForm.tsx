@@ -40,7 +40,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
           checked={form.DRY_RUN}
           onChange={(event) => setForm({ ...form, DRY_RUN: event.target.checked })}
         />
-        DRY_RUN (do everything except Graph sendMail)
+        DRY_RUN (do everything except Gmail send)
       </label>
       <label className="flex items-center gap-2 text-sm">
         <input

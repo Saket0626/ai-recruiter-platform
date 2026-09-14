@@ -3,7 +3,6 @@ node_modules
 .git
 .env
 .env.local
-data/resume.pdf
 prisma/dev.db
 *.md
 !README.md
