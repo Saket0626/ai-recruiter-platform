@@ -4,6 +4,7 @@ import { logger } from "@/lib/logging/logger";
 import { GoogleIdentityError } from "@/lib/google/identity";
 import { googleCallbackErrorMessage } from "@/lib/google/errors";
 import { redeemGoogleAuthCode } from "@/lib/google/oauth";
+import { publicOrigin } from "@/lib/http/public-origin";
 import { publicError } from "@/lib/security/errors";
 
 function settingsRedirect(origin: string, params: Record<string, string>) {
@@ -14,10 +15,11 @@ function settingsRedirect(origin: string, params: Record<string, string>) {
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
+  const origin = publicOrigin(request);
   const error = url.searchParams.get("error");
   if (error) {
     logger.warn("oauth_failure", { error, description: url.searchParams.get("error_description")?.slice(0, 180) });
-    return settingsRedirect(url.origin, {
+    return settingsRedirect(origin, {
       oauthError: googleCallbackErrorMessage(error, url.searchParams.get("error_description")),
     });
   }
@@ -34,7 +36,7 @@ export async function GET(request: Request) {
   await session.save();
 
   if (!code || !state || !expectedState || !expectedNonce || !codeVerifier || state !== expectedState) {
-    return settingsRedirect(url.origin, {
+    return settingsRedirect(origin, {
       oauthError: "Invalid or replayed OAuth state. Try connecting Gmail again. The saved account was not changed.",
     });
   }
@@ -48,11 +50,11 @@ export async function GET(request: Request) {
     session.connected = true;
     await session.save();
     logger.info("oauth_connected", { username: account.email, provider: "gmail" });
-    return settingsRedirect(url.origin, { connected: "1" });
+    return settingsRedirect(origin, { connected: "1" });
   } catch (err) {
     const message =
       err instanceof GoogleIdentityError ? err.message : publicError(err);
     logger.warn("oauth_redeem_rejected", { error: message });
-    return settingsRedirect(url.origin, { oauthError: message });
+    return settingsRedirect(origin, { oauthError: message });
   }
 }

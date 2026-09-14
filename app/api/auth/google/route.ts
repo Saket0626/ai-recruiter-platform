@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { isGoogleConfigured } from "@/lib/config/env";
 import { buildGoogleAuthUrl, createGoogleAuthRequest } from "@/lib/google/oauth";
+import { publicOrigin } from "@/lib/http/public-origin";
 import { publicError } from "@/lib/security/errors";
 
 export async function GET(request: Request) {
-  const origin = new URL(request.url).origin;
+  const origin = publicOrigin(request);
   try {
     if (!isGoogleConfigured()) {
       return NextResponse.redirect(
