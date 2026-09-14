@@ -275,3 +275,7 @@ Tests mock Graph by constructing payloads only. They never send real email. Fixt
 ## Environment variables
 
 See `.env.example` for the full list, including `DRY_RUN=true`, `AUTO_SEND=false`, `MAX_EMAILS_PER_DAY=15`, and `PROFESSOR_COOLDOWN_DAYS=90`.
+
+## Spec files from ChatGPT Astra
+
+`PROJECT_SPEC.md`, `IMPLEMENTATION_PLAN.md`, and `COLLABORATION.md` are the shared Cursor/ChatGPT review workflow. The application in this repo is implemented; treat those files as the requirements checklist, not as proof the app is unfinished.
