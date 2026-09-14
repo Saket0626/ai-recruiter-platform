@@ -1,5 +1,9 @@
 # ResearchReach implementation specification
 
+## Latest user change: Gmail (2026-09-14)
+
+Use Gmail instead of Outlook with verified sender saket.amanana@gmail.com. GMAIL_SETUP.md supersedes all Microsoft-specific provider, OAuth, scope, payload, account setup, and test requirements below. Translate those requirements to Google OAuth and Gmail API while retaining their security and quality intent. The older Outlook section is historical context, not a current prerequisite. Gmail connection is pending implementation, Google client configuration, and user consent. Keep DRY_RUN=true and AUTO_SEND=false. All other project requirements remain in force.
+
 ## Purpose and scope
 
 Build a local-first application for Saket to discover relevant professors, retrieve research evidence, compare it to his confirmed background, draft personalized undergraduate research-interest emails, attach his real resume, and send approved messages through Microsoft Outlook.
