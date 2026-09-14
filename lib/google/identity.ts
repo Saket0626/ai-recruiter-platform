@@ -55,7 +55,9 @@ export function assertGoogleIdentity(input: {
 
 export function assertGmailSendGrant(scope: string) {
   if (!hasGmailSendScope(scope)) {
-    throw new GoogleIdentityError("Google did not grant gmail.send. Reconnect and allow sending email.");
+    throw new GoogleIdentityError(
+      "Google did not grant gmail.send. Keep Send email on your behalf checked, add that scope under Google Auth Platform Data Access, then connect again.",
+    );
   }
   const forbidden = forbiddenGmailScopes(scope);
   if (forbidden.length) {

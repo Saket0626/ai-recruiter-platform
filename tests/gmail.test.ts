@@ -10,7 +10,7 @@ import {
 import { assertGmailSendGrant, assertGoogleIdentity, GoogleIdentityError } from "@/lib/google/identity";
 import { googleCallbackErrorMessage, googleRefreshErrorMessage } from "@/lib/google/errors";
 import { mergeGoogleTokens } from "@/lib/google/tokens";
-import { GMAIL_MESSAGES_SEND_URL, GMAIL_SEND_SCOPE } from "@/lib/google/scopes";
+import { GMAIL_MESSAGES_SEND_URL, GMAIL_SEND_SCOPE, combineScopes, hasGmailSendScope } from "@/lib/google/scopes";
 import { getEnv, resetEnvCache } from "@/lib/config/env";
 
 vi.mock("@/lib/google/oauth", () => ({
@@ -160,6 +160,11 @@ describe("Google identity and scopes", () => {
     expect(() =>
       assertGmailSendGrant(`${GMAIL_SEND_SCOPE} https://www.googleapis.com/auth/gmail.readonly`),
     ).toThrow(/mailbox scopes/i);
+  });
+
+  it("merges token-endpoint and tokeninfo scopes", () => {
+    expect(combineScopes(undefined, ["openid", GMAIL_SEND_SCOPE])).toBe(`openid ${GMAIL_SEND_SCOPE}`);
+    expect(hasGmailSendScope(combineScopes("openid email", [GMAIL_SEND_SCOPE]))).toBe(true);
   });
 });
 

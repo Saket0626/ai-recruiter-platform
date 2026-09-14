@@ -21,6 +21,14 @@ export function splitScope(scope: string) {
   return scope.split(/[ ,]+/).map((item) => item.trim()).filter(Boolean);
 }
 
+export function combineScopes(...parts: Array<string | string[] | undefined | null>) {
+  const tokens = parts.flatMap((part) => {
+    if (!part) return [];
+    return Array.isArray(part) ? part.map((item) => item.trim()).filter(Boolean) : splitScope(part);
+  });
+  return [...new Set(tokens)].join(" ");
+}
+
 export function hasGmailSendScope(scope: string) {
   return splitScope(scope).includes(GMAIL_SEND_SCOPE);
 }

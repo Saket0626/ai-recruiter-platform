@@ -4,7 +4,7 @@ import { getEnv, isGoogleConfigured } from "@/lib/config/env";
 import { prisma } from "@/lib/db/prisma";
 import { GoogleIdentityError, assertGmailSendGrant, assertGoogleIdentity } from "@/lib/google/identity";
 import { generateOauthState, generatePkcePair } from "@/lib/google/pkce";
-import { GOOGLE_AUTH_SCOPES, hasGmailSendScope } from "@/lib/google/scopes";
+import { GOOGLE_AUTH_SCOPES, combineScopes, hasGmailSendScope } from "@/lib/google/scopes";
 import { decryptGoogleTokens, encryptGoogleTokens, mergeGoogleTokens, type GoogleTokenSet } from "@/lib/google/tokens";
 import { googleRefreshErrorMessage } from "@/lib/google/errors";
 
@@ -47,16 +47,28 @@ export function buildGoogleAuthUrl(input: { state: string; nonce: string; challe
   return url.toString();
 }
 
-function credentialsToTokenSet(credentials: Credentials): GoogleTokenSet {
+function credentialsToTokenSet(credentials: Credentials, scope?: string): GoogleTokenSet {
   if (!credentials.access_token) throw new Error("Google did not return an access token.");
   return {
     accessToken: credentials.access_token,
     refreshToken: credentials.refresh_token || undefined,
     expiryDate: credentials.expiry_date || undefined,
-    scope: credentials.scope || undefined,
+    scope: scope || credentials.scope || undefined,
     tokenType: credentials.token_type || undefined,
     idToken: credentials.id_token || undefined,
   };
+}
+
+async function grantedGoogleScopes(client: OAuth2Client, tokens: Credentials) {
+  let scope = combineScopes(tokens.scope);
+  if (hasGmailSendScope(scope) || !tokens.access_token) return scope;
+  try {
+    const info = await client.getTokenInfo(tokens.access_token);
+    scope = combineScopes(scope, info.scopes);
+  } catch {
+    // Tokeninfo is only a fallback. Keep scopes from the token endpoint.
+  }
+  return scope;
 }
 
 export async function redeemGoogleAuthCode(input: { code: string; codeVerifier: string; expectedNonce: string }) {
@@ -88,7 +100,8 @@ export async function redeemGoogleAuthCode(input: { code: string; codeVerifier: 
     expectedNonce: input.expectedNonce,
     allowedEmail: env.GOOGLE_ALLOWED_EMAIL,
   });
-  const tokenSet = credentialsToTokenSet(tokens);
+  const scope = await grantedGoogleScopes(client, tokens);
+  const tokenSet = credentialsToTokenSet(tokens, scope);
   assertGmailSendGrant(tokenSet.scope ?? "");
   const existing = await prisma.googleAuthAccount.findUnique({ where: { id: GOOGLE_ACCOUNT_ID } });
   const previousTokens = existing?.tokenPayload ? decryptGoogleTokens(existing.tokenPayload) : null;
@@ -145,7 +158,10 @@ export async function acquireGmailAccessToken() {
     const client = getGoogleOAuthClient();
     client.setCredentials({ refresh_token: tokens.refreshToken });
     const refreshed = await client.refreshAccessToken();
-    const merged = mergeGoogleTokens(tokens, credentialsToTokenSet(refreshed.credentials));
+    const merged = mergeGoogleTokens(
+      tokens,
+      credentialsToTokenSet(refreshed.credentials, await grantedGoogleScopes(client, refreshed.credentials)),
+    );
     assertGmailSendGrant(merged.scope || row.scope);
     await prisma.googleAuthAccount.update({
       where: { id: GOOGLE_ACCOUNT_ID },
