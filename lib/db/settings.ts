@@ -30,7 +30,7 @@ export async function getAppSettings() {
     AUTO_SEND: autoSend === "true",
     // Only the canonical explicit opt-out may disable dry run.
     DRY_RUN: dryRun !== "false",
-    MAX_EMAILS_PER_DAY: Number(maxPerDay),
+    MAX_EMAILS_PER_DAY: Math.min(20, Number(maxPerDay)),
     PROFESSOR_COOLDOWN_DAYS: Number(cooldown),
     MIN_RELEVANCE_SCORE: Number(minScore),
     AUTOPILOT_MIN_SCORE: Number(autopilotMin),
