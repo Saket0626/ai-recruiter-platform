@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getAppSettings } from "@/lib/db/settings";
 import { normalizeEmail } from "@/lib/security/email";
 import { realContactStatuses } from "@/lib/email/send-gate";
+import { dailySendCountWhere } from "@/lib/email/send-outcome";
 import { cooldownActiveFrom, dailyCapReachedFromCount, jitterDelayMs } from "@/lib/email/rate-limit-policy";
 import type { Prisma, PrismaClient } from "@prisma/client";
 
@@ -13,13 +14,7 @@ export async function sentCountToday(db: DbClient = prisma) {
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   return db.emailSend.count({
-    where: {
-      dryRun: false,
-      OR: [
-        { status: { in: realContactStatuses() }, sentAt: { gte: start } },
-        { status: "SUBMITTING", createdAt: { gte: start } },
-      ],
-    },
+    where: dailySendCountWhere(start),
   });
 }
 
