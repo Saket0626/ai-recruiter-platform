@@ -16,7 +16,7 @@ const availabilitySchema = z
 const settingsPatchSchema = z.object({
   AUTO_SEND: z.boolean().optional(),
   DRY_RUN: z.boolean().optional(),
-  MAX_EMAILS_PER_DAY: z.number().int().positive().max(100).optional(),
+  MAX_EMAILS_PER_DAY: z.number().int().positive().max(20).optional(),
   PROFESSOR_COOLDOWN_DAYS: z.number().int().positive().max(3650).optional(),
   MIN_RELEVANCE_SCORE: z.number().int().min(0).max(100).optional(),
   AUTOPILOT_MIN_SCORE: z.number().int().min(0).max(100).optional(),
