@@ -13,6 +13,7 @@ import { generateGroundedEmail } from "@/lib/email/generator";
 import { createEmailProvider } from "@/lib/email/create-provider";
 import { dailyCapReached, isInCooldown, jitterDelayMs, sentCountToday } from "@/lib/email/rate-limit";
 import { assertDraftSendable, professorStatusAfterSend } from "@/lib/email/send-gate";
+import { persistedSendStatus } from "@/lib/email/send-outcome";
 import { hashResumePdf } from "@/lib/resume/hash";
 import { loadStudentProfile, resolveResumePath, resumeExists } from "@/lib/resume/service";
 import { isGenericInbox, normalizeEmail, normalizeUrl } from "@/lib/security/email";
@@ -569,7 +570,7 @@ export async function sendApprovedDraft(draftId: string, options?: { autopilot?:
     throw error;
   }
 
-  const status = result.ok ? (result.dryRun ? "DRY_RUN" : "SENT") : "FAILED";
+  const status = persistedSendStatus(result);
   const send = await prisma.emailSend.update({
     where: { id: reservation.id },
     data: {
@@ -591,7 +592,7 @@ export async function sendApprovedDraft(draftId: string, options?: { autopilot?:
   await prisma.professor.update({
     where: { id: draft.professorId },
     data: {
-      status: professorStatusAfterSend(result.dryRun, result.ok),
+      status: status === "UNKNOWN" ? "UNKNOWN" : professorStatusAfterSend(result.dryRun, result.ok),
       lastContactedAt: result.ok && !result.dryRun ? new Date() : undefined,
     },
   });
