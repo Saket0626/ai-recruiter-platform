@@ -1,7 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
+import { UniversityPicker, type UniversityOption } from "@/components/UniversityPicker";
 import { DEFAULT_RESEARCH_KEYWORDS } from "@/lib/config/defaults";
+
+const DEFAULT_UNI: UniversityOption = {
+  name: "University of Texas at Dallas",
+  shortName: "UT Dallas",
+  domain: "utdallas.edu",
+  departments: ["Computer Science", "Information Systems", "Computer Engineering"],
+  facultyDirectories: ["https://cs.utdallas.edu/people/faculty/", "https://jindal.utdallas.edu/faculty/"],
+};
 
 type Progress = {
   discovered?: number;
@@ -14,27 +23,38 @@ type Progress = {
 };
 
 export function DiscoverForm() {
-  const [schoolCount, setSchoolCount] = useState(100);
+  const [universities, setUniversities] = useState<UniversityOption[]>([DEFAULT_UNI]);
   const [department, setDepartment] = useState("Computer Science");
+  const [seedUrls, setSeedUrls] = useState(DEFAULT_UNI.facultyDirectories.join("\n"));
   const [interests, setInterests] = useState(DEFAULT_RESEARCH_KEYWORDS.slice(0, 8).join(", "));
-  const [maxCandidates, setMaxCandidates] = useState(300);
-  const [maxPerUniversity, setMaxPerUniversity] = useState(3);
+  const [maxCandidates, setMaxCandidates] = useState(30);
+  const [maxPerUniversity, setMaxPerUniversity] = useState(12);
   const [minScore, setMinScore] = useState(65);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [progress, setProgress] = useState<Progress | null>(null);
 
-  useEffect(() => {
-    void fetch("/api/universities?preset=top100")
-      .then((response) => response.json())
-      .then((data) => {
-        if (typeof data.top100 === "number") setSchoolCount(data.top100);
-      })
-      .catch(() => undefined);
-  }, []);
+  const multi = universities.length > 1;
+  const seedField = useMemo(() => {
+    if (universities.length === 1) return universities[0]?.facultyDirectories.join("\n") ?? "";
+    return universities.flatMap((university) => university.facultyDirectories).join("\n");
+  }, [universities]);
+
+  function applyUniversities(next: UniversityOption[]) {
+    setUniversities(next);
+    setDepartment(next[0]?.departments[0] ?? "Computer Science");
+    setSeedUrls(next.length === 1 ? (next[0]?.facultyDirectories.join("\n") ?? "") : next.flatMap((university) => university.facultyDirectories).join("\n"));
+    if (next.length >= 100) {
+      setMaxCandidates(120);
+      setMaxPerUniversity(4);
+    } else if (next.length > 1) {
+      setMaxCandidates(Math.max(40, next.length * 3));
+      setMaxPerUniversity(8);
+    }
+  }
 
   async function pollRun(id: string) {
-    for (let i = 0; i < 2400; i += 1) {
+    for (let i = 0; i < 600; i += 1) {
       const response = await fetch(`/api/discover/${id}`);
       const data = await response.json();
       const run = data.run;
@@ -49,23 +69,29 @@ export function DiscoverForm() {
         setMessage(run.errorMessage ?? "Discovery failed");
         return;
       }
-      const current = run?.progressJson ? JSON.parse(run.progressJson).currentUniversity : "universities";
-      setMessage(`Working on ${current} · ${run?.currentStage}`);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      setMessage(`Working on ${run?.progressJson ? JSON.parse(run.progressJson).currentUniversity : "universities"} · ${run?.currentStage}`);
+      await new Promise((resolve) => setTimeout(resolve, 1500));
     }
-    setMessage("Discovery is still running in the background. Refresh Discover to check later.");
+    setMessage("Discovery is still running. Refresh Discover to check later.");
   }
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (!universities.length) {
+      setMessage("Select at least one university.");
+      return;
+    }
     setBusy(true);
-    setMessage(`Starting discovery across all ${schoolCount} Top 100 universities. Emails are drafted as soon as an AI professor is found.`);
+    setMessage("Starting discovery across selected universities. Public faculty pages are retrieved with crawl delays.");
     const response = await fetch("/api/discover", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        preset: "top100",
+        universities: universities.map((university) => university.name),
+        university: universities[0]?.name,
+        universityDomain: universities.length === 1 ? universities[0]?.domain : undefined,
         department,
+        seedUrls: universities.length === 1 ? seedUrls.split(/\n+/).map((line) => line.trim()).filter(Boolean) : [],
         researchInterests: interests.split(",").map((item) => item.trim()).filter(Boolean),
         maxCandidates,
         maxCandidatesPerUniversity: maxPerUniversity,
@@ -84,12 +110,7 @@ export function DiscoverForm() {
 
   return (
     <form onSubmit={onSubmit} className="rr-card p-6 space-y-4">
-      <div className="rounded-xl border border-line bg-white px-4 py-3">
-        <p className="font-medium">All Top 100 U.S. universities</p>
-        <p className="mt-1 text-sm text-muted">
-          Every run searches the full {schoolCount}-school catalog. The moment a faculty page shows AI, machine learning, NLP, vision, or similar research, an email is drafted and sent to Review. A full run takes a while because the crawler waits between public pages.
-        </p>
-      </div>
+      <UniversityPicker selected={universities} onChange={applyUniversities} />
       <label className="block text-sm font-medium">
         Department
         <input
@@ -98,6 +119,30 @@ export function DiscoverForm() {
           onChange={(event) => setDepartment(event.target.value)}
         />
       </label>
+      {universities.length === 1 ? (
+        <>
+          <label className="block text-sm font-medium">
+            University domain
+            <input className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2" value={universities[0]?.domain ?? ""} readOnly />
+          </label>
+          <label className="block text-sm font-medium">
+            Seed faculty URLs
+            <textarea
+              className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2 font-mono text-sm"
+              rows={4}
+              value={seedUrls}
+              onChange={(event) => setSeedUrls(event.target.value)}
+            />
+          </label>
+        </>
+      ) : (
+        <p className="text-sm text-muted">
+          Each selected school uses its catalog faculty directory. {seedField.split("\n").filter(Boolean).length} seed URLs will be crawled.
+          {universities.length >= 50
+            ? " A Top 100 run takes a while because the crawler waits between public pages."
+            : null}
+        </p>
+      )}
       <label className="block text-sm font-medium">
         Research interests
         <textarea
@@ -124,6 +169,7 @@ export function DiscoverForm() {
             className="mt-1 w-full rounded-xl border border-line bg-white px-3 py-2"
             value={maxPerUniversity}
             onChange={(event) => setMaxPerUniversity(Number(event.target.value))}
+            disabled={!multi && universities.length <= 1}
           />
         </label>
         <label className="text-sm font-medium">
@@ -137,12 +183,12 @@ export function DiscoverForm() {
         </label>
       </div>
       <button className="rr-btn rr-btn-primary" disabled={busy} type="submit">
-        {busy ? "Discovering…" : `Start discovery (${schoolCount} schools)`}
+        {busy ? "Discovering…" : universities.length > 1 ? `Start discovery (${universities.length} schools)` : "Start discovery"}
       </button>
       {message ? <p className="text-sm text-muted">{message}</p> : null}
       {progress ? (
         <p className="text-sm">
-          Schools {progress.universitiesDone ?? 0}/{progress.universitiesTotal ?? schoolCount}
+          Schools {progress.universitiesDone ?? 0}/{progress.universitiesTotal ?? universities.length}
           {progress.currentUniversity ? ` · ${progress.currentUniversity}` : ""}
           {" "}· Discovered {progress.discovered ?? 0} · Researched {progress.researched ?? 0} · Qualified {progress.qualified ?? 0} · Queued {progress.queued ?? 0}
         </p>
