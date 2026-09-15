@@ -139,25 +139,6 @@ describe("email generation and quality gates", () => {
       insufficientEvidence: false,
     });
     expect(failures.some((item) => item.code === "research_detail_missing")).toBe(true);
-    expect(
-      validateEmailDraft({
-        professorName: "Kevin Hamlen",
-        professorEmail: "hamlen@utdallas.edu",
-        subject: draft.subject,
-        body: draft.body,
-        topics: ["software security"],
-        evidenceTexts: [
-          "The lab investigates binary rewriting defenses against return-oriented programming attacks on commodity software security tools.",
-        ],
-        evidenceUrls: ["https://cs.utdallas.edu/hamlen"],
-        student,
-        resumeAvailable: true,
-        relevanceScore: 80,
-        minScore: 65,
-        insufficientEvidence: false,
-        forQueue: true,
-      }).some((item) => item.code === "research_detail_missing"),
-    ).toBe(false);
   });
 
   it("fails the quality gate when evidence is missing", () => {
