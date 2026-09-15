@@ -11,9 +11,9 @@ describe("production rate limits and cooldown", () => {
     expect(cooldownActiveFrom(old, 90)).toBe(false);
   });
 
-  it("enforces a daily cap of 15 using the production helper", () => {
-    expect(dailyCapReachedFromCount(15, 15)).toBe(true);
-    expect(dailyCapReachedFromCount(14, 15)).toBe(false);
+  it("enforces a daily cap of 20 using the production helper", () => {
+    expect(dailyCapReachedFromCount(20, 20)).toBe(true);
+    expect(dailyCapReachedFromCount(19, 20)).toBe(false);
   });
 
   it("returns a positive jitter delay from the production helper", () => {
