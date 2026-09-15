@@ -41,6 +41,7 @@ export function validateEmailDraft(input: {
   allowGenericInbox?: boolean;
   autopilot?: boolean;
   availabilitySentence?: string;
+  forQueue?: boolean;
 }): QualityFailure[] {
   const failures: QualityFailure[] = [];
   const email = input.professorEmail ? normalizeEmail(input.professorEmail) : "";
@@ -71,7 +72,7 @@ export function validateEmailDraft(input: {
   if (input.insufficientEvidence) {
     failures.push({ code: "insufficient_evidence", message: "Professor does not have enough retrieved evidence." });
   }
-  if (input.relevanceScore < input.minScore) {
+  if (!input.forQueue && input.relevanceScore < input.minScore) {
     failures.push({
       code: "low_score",
       message: `Relevance score ${input.relevanceScore} is below the threshold ${input.minScore}.`,
@@ -150,7 +151,7 @@ export function validateEmailDraft(input: {
   }
 
   const evidenceBlob = input.evidenceTexts.join(" ").replace(/\s+/g, " ").trim();
-  if (evidenceBlob.length >= 80 && !input.insufficientEvidence) {
+  if (!input.forQueue && evidenceBlob.length >= 80 && !input.insufficientEvidence) {
     const detail = extractGroundedResearchDetail({
       topics: input.topics,
       evidenceTexts: input.evidenceTexts,

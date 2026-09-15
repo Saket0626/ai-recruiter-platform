@@ -29,7 +29,7 @@ export default async function DashboardPage() {
         <p className="text-sm uppercase tracking-[0.18em] text-muted">Overview</p>
         <h1 className="mt-1 text-3xl font-semibold">ResearchReach dashboard</h1>
         <p className="mt-2 max-w-2xl text-muted">
-          Discover professors across the top 100 U.S. universities and other research schools, keep every research claim tied to a retrieved page, and send approved notes through Gmail.
+          Discover professors across all Top 100 U.S. universities, keep every research claim tied to a retrieved page, and send approved notes through Gmail.
         </p>
       </header>
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

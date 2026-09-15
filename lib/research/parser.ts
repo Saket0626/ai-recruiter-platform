@@ -38,6 +38,9 @@ function splitName(fullName: string) {
   };
 }
 
+const NAME_STOPWORDS =
+  /\b(skip|main|content|search|searchmenu|menu|navigation|about|affairs|facts|figures|maps|accreditations|directory|department|university|people|contact|faculty)\b/i;
+
 export function looksLikePersonName(value: string) {
   const trimmed = value
     .replace(/([a-z])(Associate|Assistant|Professor|Lecturer|Instructor)/g, "$1 $2")
@@ -45,14 +48,8 @@ export function looksLikePersonName(value: string) {
     .replace(/\s+/g, " ")
     .trim();
   if (trimmed.length < 4 || trimmed.length > 70) return false;
-  if (
-    /skip to|main content|searchmenu|secondary navigation|external affairs|facts & figures|about us|faculty directory|department of|computer science people/i.test(
-      trimmed,
-    )
-  ) {
-    return false;
-  }
-  if (/\b(search|menu|navigation|content|university|department|contact|faculty|people)\b/i.test(trimmed)) {
+  if (NAME_STOPWORDS.test(trimmed)) return false;
+  if (/faculty directory|computer science people|secondary navigation|external affairs/i.test(trimmed)) {
     return false;
   }
   if (/^[A-Z][A-Za-z.'\-]+,\s+[A-Z][A-Za-z.'\-]+/.test(trimmed)) return true;

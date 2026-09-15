@@ -11,7 +11,7 @@ export default async function DiscoverPage() {
         <p className="text-sm uppercase tracking-[0.18em] text-muted">Discovery</p>
         <h1 className="mt-1 text-3xl font-semibold">Find professors</h1>
         <p className="mt-2 text-muted">
-          Search one school or run the Top 100 U.S. universities preset. Each school is crawled from its own public faculty directory and <code>site:domain</code> queries. UT Dallas is the default starter, not the only target.
+          Every discovery run searches all Top 100 U.S. universities. As soon as a professor page shows AI research, ResearchReach drafts an email and puts it in Review. Each school is crawled from its own public faculty directory and <code>site:domain</code> queries.
         </p>
       </header>
       <DiscoverForm />

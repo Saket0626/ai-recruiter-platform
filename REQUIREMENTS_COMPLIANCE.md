@@ -46,7 +46,7 @@ Status: **Implemented** / **Partial** / **Missing** / **Superseded**.
 
 | Requirement | Status | Evidence |
 | --- | --- | --- |
-| Configurable university/domain/department/keywords/max/min score | Implemented | Discover UI + `discoveryInputSchema` |
+| Configurable department/keywords/max/min score; always searches Top 100 universities | Implemented | Discover UI + `discoveryInputSchema` default `preset: "top100"` |
 | Seeded crawl without search key; SearchProvider API optional | Implemented | `lib/search/seeded-crawler.ts`, `composite.ts` |
 | No Google SERP HTML scraping | Implemented | Search API or seeds only |
 | Crawl delay, identifiable User-Agent, cache, robots, SSRF | Implemented | `lib/search/{robots,ssrf,fetch-public}.ts` |

@@ -9,6 +9,7 @@ import {
   resolveUniversitySelections,
 } from "@/lib/universities/catalog";
 import { buildFacultySearchQueries } from "@/lib/search/queries";
+import { discoveryInputSchema } from "@/lib/validation/schemas";
 
 describe("university catalog", () => {
   it("contains at least 100 U.S. universities", () => {
@@ -81,5 +82,14 @@ describe("university catalog", () => {
     expect(selected.some((university) => university.domain === "utdallas.edu")).toBe(true);
     expect(selected.some((university) => university.domain === "cmu.edu")).toBe(true);
     expect(selected.length).toBeGreaterThan(10);
+  });
+
+  it("defaults a discovery run to the Top 100 catalog instead of a single school", () => {
+    const parsed = discoveryInputSchema.parse({});
+    expect(parsed.preset).toBe("top100");
+    const selected = resolveUniversitySelections(parsed);
+    expect(selected.length).toBeGreaterThanOrEqual(100);
+    expect(selected.some((university) => university.domain === "mit.edu")).toBe(true);
+    expect(selected.some((university) => university.domain === "stanford.edu")).toBe(true);
   });
 });

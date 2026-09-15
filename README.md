@@ -14,7 +14,7 @@ Keep `DRY_RUN=true` and `AUTO_SEND=false` until you intentionally enable live se
 
 ## What it does
 
-1. You pick one university, several universities, or the Top 100 U.S. universities preset (UT Dallas is the default starter, not the only option).
+1. Discovery searches all Top 100 U.S. universities automatically. You do not pick schools.
 2. The app crawls public faculty directory URLs for that school and, if you configured a search API key, runs `site:that-university-domain` queries.
 3. It stores source URLs and extracted text for every research claim.
 4. It scores relevance against Saket's resume and the configured research families (AI, software engineering, security, information systems, and related areas).
@@ -131,12 +131,7 @@ The parser, not this README, is the source of truth for experience wording. It w
 
 ## University catalog
 
-Research is not limited to UT Dallas. `data/universities.json` includes 100+ U.S. universities. The Discover page can run against:
-
-- one school (UT Dallas is only the default starter)
-- several schools you pick from search
-- **Top 100 U.S. universities** (2026 U.S. News-style national universities, 100 schools)
-- **Top CS programs** (MIT, Stanford, CMU, Berkeley, Georgia Tech, UIUC, Michigan, UT Austin, and others, plus UT Dallas)
+Research is not limited to UT Dallas. `data/universities.json` includes 100+ U.S. universities. Every Discover run searches the **Top 100 U.S. universities** catalog (2026 U.S. News-style national universities). You do not choose a subset.
 
 Each catalog entry has:
 
@@ -219,10 +214,8 @@ SEARCH_API_URL=
 ## How to run discovery
 
 1. Open **Discover**.
-2. Search for universities (Harvard, MIT, Michigan, Georgia Tech, …) or click **Top 100 U.S. universities**.
-3. Confirm departments and, for a single school, faculty seed URLs.
-4. Set research interests, total candidate cap, per-university cap, and minimum score (default 65).
-5. Start discovery. Multi-school runs report which university is in progress.
+2. Confirm department, research interests, candidate caps, and minimum score (default 65).
+3. Start discovery. It always walks all Top 100 schools and reports which university is in progress.
 
 Pipeline: discover → extract → retrieve pages → store evidence → analyze → score → filter → personalize → validate → queue.
 

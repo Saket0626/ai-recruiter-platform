@@ -175,6 +175,14 @@ export function uniqueLabels(matches: Array<{ label: string }>) {
   return [...new Set(matches.map((match) => match.label))];
 }
 
+export function hasAiResearch(text: string) {
+  return findKeywordMatches(text).some((match) => match.family === "ai");
+}
+
+export function aiTopicLabels(text: string) {
+  return uniqueLabels(findKeywordMatches(text).filter((match) => match.family === "ai"));
+}
+
 export function topicSupportedByEvidence(topic: string, evidence: string) {
   const haystack = normalizeText(evidence);
   const needle = topic.toLowerCase().trim();

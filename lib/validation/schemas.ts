@@ -95,13 +95,13 @@ export type StudentProfile = z.infer<typeof studentProfileSchema>;
 export const discoveryInputSchema = z.object({
   university: z.string().optional(),
   universities: z.array(z.string()).optional(),
-  preset: z.enum(["custom", "top100", "top-cs"]).optional().default("custom"),
+  preset: z.enum(["custom", "top100", "top-cs"]).optional().default("top100"),
   department: z.string().optional().default("Computer Science"),
   universityDomain: z.string().optional(),
   seedUrls: z.array(z.string()).default([]),
   researchInterests: z.array(z.string()).default([]),
-  maxCandidates: z.coerce.number().int().min(1).max(300).default(30),
-  maxCandidatesPerUniversity: z.coerce.number().int().min(1).max(80).default(12),
+  maxCandidates: z.coerce.number().int().min(1).max(500).default(300),
+  maxCandidatesPerUniversity: z.coerce.number().int().min(1).max(80).default(3),
   minScore: z.coerce.number().int().min(0).max(100).default(65),
 });
 

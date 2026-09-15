@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { extractEmails, isGenericInbox, normalizeEmail, normalizeUrl, preferUniversityEmail } from "@/lib/security/email";
-import { extractFacultyFromDirectory } from "@/lib/research/parser";
+import { extractFacultyFromDirectory, looksLikePersonName } from "@/lib/research/parser";
 import { identityKey } from "@/lib/security/email";
-import { topicSupportedByEvidence } from "@/lib/research/keywords";
+import { hasAiResearch, topicSupportedByEvidence } from "@/lib/research/keywords";
 
 const directory = `
 <html><body>
@@ -67,6 +67,9 @@ describe("email extraction and normalization", () => {
     `;
     const people = extractFacultyFromDirectory(html, "https://cs.harvard.edu/people", "harvard.edu");
     expect(people.every((person) => !/skip to main/i.test(person.fullName))).toBe(true);
+    expect(looksLikePersonName("Skip To Main")).toBe(false);
+    expect(looksLikePersonName("External Affairs")).toBe(false);
+    expect(looksLikePersonName("Kevin Hamlen")).toBe(true);
   });
 
   it("uses a stable identity key", () => {
@@ -76,5 +79,7 @@ describe("email extraction and normalization", () => {
   it("treats family keyword terms as evidence for a topic label", () => {
     expect(topicSupportedByEvidence("program analysis", "The lab uses static analysis on binaries.")).toBe(true);
     expect(topicSupportedByEvidence("natural language processing", "This page has no research.")).toBe(false);
+    expect(hasAiResearch("Research in large language models and machine learning.")).toBe(true);
+    expect(hasAiResearch("Office hours are Monday through Friday.")).toBe(false);
   });
 });

@@ -1,5 +1,6 @@
 import { getEnv } from "@/lib/config/env";
-import { extractFacultyFromDirectory, extractVisibleText } from "@/lib/research/parser";
+import { extractFacultyFromDirectory, extractVisibleText, looksLikePersonName } from "@/lib/research/parser";
+import { hasAiResearch } from "@/lib/research/keywords";
 import { fetchPublicHtml } from "@/lib/search/fetch-public";
 import { isUrlAllowedByRobots } from "@/lib/search/robots";
 import type { FacultySearchQuery, SearchProvider, SearchResult } from "@/lib/search/provider";
@@ -31,7 +32,9 @@ export class SeededCrawlerSearchProvider implements SearchProvider {
       if (!page.ok) continue;
       const faculty = extractFacultyFromDirectory(page.html, page.url, query.domain);
       if (faculty.length) {
-        for (const person of faculty) {
+        const ranked = [...faculty].sort((a, b) => Number(hasAiResearch(b.snippet)) - Number(hasAiResearch(a.snippet)));
+        for (const person of ranked) {
+          if (!looksLikePersonName(person.fullName)) continue;
           results.push({
             title: person.fullName,
             url: person.facultyPageUrl || page.url,

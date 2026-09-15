@@ -5,8 +5,8 @@ import { DEFAULT_RESEARCH_KEYWORDS } from "@/lib/config/defaults";
 import { logger } from "@/lib/logging/logger";
 import { analyzeProfessorResearch } from "@/lib/research/analyzer";
 import { FallbackResearchProvider } from "@/lib/research/crawler";
-import { extractFacultyFromDirectory, extractProfileDetails, looksLikePersonName, sourcePriority } from "@/lib/research/parser";
-import { topicSupportedByEvidence } from "@/lib/research/keywords";
+import { extractProfileDetails, looksLikePersonName, sourcePriority } from "@/lib/research/parser";
+import { topicSupportedByEvidence, hasAiResearch, aiTopicLabels } from "@/lib/research/keywords";
 import { scoreProfessorRelevance } from "@/lib/research/scorer";
 import { CompositeSearchProvider } from "@/lib/search/composite";
 import { generateGroundedEmail } from "@/lib/email/generator";
@@ -45,7 +45,7 @@ type Progress = {
 function perUniversityCap(input: DiscoveryInput, universityCount: number) {
   if (universityCount <= 1) return input.maxCandidates;
   const fairShare = Math.max(1, Math.floor(input.maxCandidates / universityCount));
-  return Math.min(input.maxCandidatesPerUniversity, Math.max(fairShare, 3));
+  return Math.min(input.maxCandidatesPerUniversity, fairShare);
 }
 
 export async function runDiscovery(raw: DiscoveryInput) {
@@ -127,7 +127,6 @@ export async function executeDiscovery(runId: string) {
     const capPerSchool = perUniversityCap(input, universities.length);
 
     for (const university of universities) {
-      if (progress.discovered >= input.maxCandidates) break;
       progress.currentUniversity = university.name;
       await updateRun(run.id, {
         currentStage: `DISCOVER:${university.shortName}`,
@@ -140,7 +139,7 @@ export async function executeDiscovery(runId: string) {
         minScore: input.minScore,
         runId: run.id,
         research,
-        remaining: Math.min(capPerSchool, input.maxCandidates - progress.discovered),
+        remaining: capPerSchool,
         progress,
       });
       progress.universitiesDone += 1;
@@ -177,11 +176,12 @@ async function discoverOneUniversity(input: {
 }) {
   if (input.remaining <= 0) return;
   const search = new CompositeSearchProvider(input.university.seedUrls);
+  const scanBudget = Math.max(input.remaining * 8, 12);
   const hits = await search.searchFaculty({
     university: input.university.name,
     domain: input.university.domain,
     keywords: input.keywords,
-    maxResults: input.remaining,
+    maxResults: scanBudget,
   });
 
   const seen = new Set<string>();
@@ -198,51 +198,68 @@ async function discoverOneUniversity(input: {
     snippet: string;
   }> = [];
 
-  for (const seed of input.university.seedUrls) {
-    const pages = await input.research.retrieve([seed]);
-    for (const page of pages) {
-      for (const person of extractFacultyFromDirectory(page.html, page.url, input.university.domain)) {
-        if (!looksLikePersonName(person.fullName)) continue;
-        if (person.email && isGenericInbox(person.email)) continue;
-        const key = (person.email || person.facultyPageUrl || person.fullName).toLowerCase();
-        if (seen.has(key)) continue;
-        seen.add(key);
-        peopleQueue.push(person);
-      }
-    }
-  }
-
-  for (const url of [...new Set(hits.map((hit) => hit.url).filter(Boolean))]) {
-    if (peopleQueue.length >= input.remaining) break;
-    const pages = await input.research.retrieve([url]);
-    const page = pages[0];
-    if (!page) continue;
-    const people = extractFacultyFromDirectory(page.html, page.url, input.university.domain);
-    const fallbackPerson =
-      people[0] ?? nameFromHit(hits.find((hit) => hit.url === url)?.title ?? "", page.url, input.university.domain, page.text);
-    if (!fallbackPerson || !looksLikePersonName(fallbackPerson.fullName)) continue;
-    if (fallbackPerson.email && isGenericInbox(fallbackPerson.email)) continue;
-    const key = (fallbackPerson.email || fallbackPerson.facultyPageUrl || fallbackPerson.fullName).toLowerCase();
+  for (const hit of hits) {
+    const person =
+      nameFromHit(hit.title, hit.url, input.university.domain, hit.snippet) ??
+      (looksLikePersonName(hit.title)
+        ? {
+            firstName: hit.title.split(/\s+/)[0] ?? hit.title,
+            lastName: hit.title.split(/\s+/).filter(Boolean).at(-1) || hit.title,
+            fullName: hit.title,
+            title: null,
+            email: null,
+            emailSourceUrl: null,
+            facultyPageUrl: hit.url,
+            labUrl: null,
+            personalWebsite: null,
+            snippet: hit.snippet,
+          }
+        : null);
+    if (!person || !looksLikePersonName(person.fullName)) continue;
+    if (person.email && isGenericInbox(person.email)) continue;
+    const key = (person.email || person.facultyPageUrl || person.fullName).toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    peopleQueue.push(fallbackPerson);
+    peopleQueue.push({ ...person, snippet: person.snippet || hit.snippet });
   }
 
-  for (const person of peopleQueue.slice(0, input.remaining)) {
-    const result = await persistAndResearch({
-      person,
-      university: input.university.name,
-      department: input.university.department,
-      domain: input.university.domain,
-      student: input.student,
-      minScore: input.minScore,
-      runId: input.runId,
-      research: input.research,
-    });
-    input.progress.discovered += 1;
-    if (result.researched) input.progress.researched += 1;
-    if (result.qualified) input.progress.qualified += 1;
-    if (result.queued) input.progress.queued += 1;
+  peopleQueue.sort((a, b) => Number(hasAiResearch(b.snippet)) - Number(hasAiResearch(a.snippet)));
+
+  let scanned = 0;
+  let aiQueued = 0;
+  for (const person of peopleQueue) {
+    if (aiQueued >= input.remaining) break;
+    if (scanned >= scanBudget) break;
+    scanned += 1;
+    try {
+      const result = await persistAndResearch({
+        person,
+        university: input.university.name,
+        department: input.university.department,
+        domain: input.university.domain,
+        student: input.student,
+        minScore: input.minScore,
+        runId: input.runId,
+        research: input.research,
+      });
+      input.progress.discovered += 1;
+      if (result.researched) input.progress.researched += 1;
+      if (result.qualified) input.progress.qualified += 1;
+      if (result.queued) {
+        input.progress.queued += 1;
+        aiQueued += 1;
+      }
+      await updateRun(input.runId, {
+        currentStage: result.queued ? `EMAIL:${person.lastName}` : `DISCOVER:${input.university.shortName}`,
+        progressJson: JSON.stringify(input.progress),
+      });
+    } catch (error) {
+      logger.error("professor_pipeline_failed", {
+        name: person.fullName,
+        university: input.university.name,
+        error: error instanceof Error ? error.message : "unknown",
+      });
+    }
   }
 }
 
@@ -327,7 +344,7 @@ async function persistAndResearch(input: {
   for (const page of pages) {
     const details = extractProfileDetails(page.html, page.url, input.domain);
     combinedText += `\n${details.text}`;
-    if (!professor.email && details.email) {
+    if (!professor.email && details.email && !isGenericInbox(details.email)) {
       await prisma.professor.update({
         where: { id: professor.id },
         data: {
@@ -362,7 +379,12 @@ async function persistAndResearch(input: {
     student: input.student,
   });
   const evidenceText = evidenceRows.map((row) => row.extractedText).join("\n");
-  const topics = analysis.research_topics.filter((topic) => topicSupportedByEvidence(topic, evidenceText));
+  const aiTopics = aiTopicLabels(`${combinedText}\n${evidenceText}`);
+  const isAi = aiTopics.length > 0 || hasAiResearch(combinedText);
+  const topics = [
+    ...analysis.research_topics.filter((topic) => topicSupportedByEvidence(topic, evidenceText)),
+    ...aiTopics,
+  ].filter((topic, index, all) => all.indexOf(topic) === index);
   const scored = scoreProfessorRelevance({
     pageText: combinedText,
     student: input.student,
@@ -370,9 +392,8 @@ async function persistAndResearch(input: {
   });
   const latestEmail = (await prisma.professor.findUnique({ where: { id: professor.id }, select: { email: true } }))?.email;
   const genericInbox = latestEmail ? isGenericInbox(latestEmail) : false;
-  const insufficient =
-    analysis.insufficient_evidence || topics.length === 0 || scored.score < 20 || !latestEmail;
-  const status = insufficient ? "INSUFFICIENT_EVIDENCE" : scored.score >= input.minScore ? "QUALIFIED" : "RESEARCHED";
+  const insufficient = !isAi || !latestEmail || genericInbox || evidenceRows.length === 0 || topics.length === 0;
+  const status = insufficient ? "INSUFFICIENT_EVIDENCE" : isAi ? "QUALIFIED" : scored.score >= input.minScore ? "QUALIFIED" : "RESEARCHED";
 
   await prisma.professor.update({
     where: { id: professor.id },
@@ -380,7 +401,7 @@ async function persistAndResearch(input: {
       researchTopics: JSON.stringify(topics),
       researchSummary: analysis.research_summary,
       currentProjects: JSON.stringify(analysis.current_projects),
-      relevanceScore: insufficient ? scored.score : Math.round((scored.score + analysis.relevance_score) / 2),
+      relevanceScore: scored.score,
       relevanceExplanation: analysis.relevance_reason || scored.explanation,
       scoringFactors: JSON.stringify(scored.factors),
       insufficientEvidence: insufficient,
@@ -388,74 +409,101 @@ async function persistAndResearch(input: {
       status,
     },
   });
-  logger.info("research_completed", { professorId: professor.id, status, score: scored.score });
+  logger.info("research_completed", { professorId: professor.id, status, score: scored.score, ai: isAi });
 
-  if (insufficient || scored.score < input.minScore) {
-    logger.info("qualification_result", { professorId: professor.id, qualified: false, reason: status });
+  if (!isAi || insufficient) {
+    logger.info("qualification_result", { professorId: professor.id, qualified: false, reason: isAi ? status : "not_ai" });
     return { researched: true, qualified: false, queued: false };
   }
 
-  logger.info("qualification_result", { professorId: professor.id, qualified: true });
-  const settings = await getAppSettings();
-  const email = generateGroundedEmail({
-    professorLastName: professor.lastName,
-    professorFullName: professor.fullName,
-    topics,
-    researchSummary: analysis.research_summary,
-    student: input.student,
-    evidenceTexts: evidenceRows.map((row) => row.extractedText),
-    availabilitySentence: settings.AVAILABILITY_SENTENCE,
+  const existingDraft = await prisma.emailDraft.findFirst({
+    where: { professorId: professor.id, status: { in: ["QUEUED", "APPROVED"] } },
   });
-  const latest = await prisma.professor.findUniqueOrThrow({ where: { id: professor.id } });
-  const alreadyContacted = latest.email ? await isInCooldown(latest.email) : false;
-  const failures = validateEmailDraft({
-    professorName: latest.fullName,
-    professorEmail: latest.email,
-    subject: email.subject,
-    body: email.body,
-    topics,
-    evidenceTexts: evidenceRows.map((row) => row.extractedText),
-    evidenceUrls: evidenceRows.map((row) => row.url),
-    student: input.student,
-    resumeAvailable: resumeExists(),
-    relevanceScore: latest.relevanceScore ?? 0,
-    minScore: input.minScore,
-    insufficientEvidence: insufficient,
-    alreadyContacted,
-    allowGenericInbox: latest.allowGenericInbox,
-    availabilitySentence: settings.AVAILABILITY_SENTENCE,
-  });
-
-  const draft = await prisma.emailDraft.create({
-    data: {
-      professorId: professor.id,
-      discoveryRunId: input.runId,
-      subject: email.subject,
-      body: email.body,
-      personalizedTopics: JSON.stringify(email.personalized_topics),
-      studentClaims: JSON.stringify(email.student_claims),
-      validationErrors: JSON.stringify(failures),
-      validationPassed: failures.length === 0,
-      status: failures.length ? "VALIDATION_FAILED" : "QUEUED",
-      failureReason: failures[0]?.message,
-    },
-  });
-  logger.info(failures.length ? "validation_failed" : "validation_passed", {
-    draftId: draft.id,
-    professorId: professor.id,
-    failures: failures.map((item) => item.code),
-  });
-  logger.info("draft_generated", { draftId: draft.id, professorId: professor.id });
-
-  if (failures.length === 0) {
+  if (existingDraft) {
+    logger.info("draft_generated", { draftId: existingDraft.id, professorId: professor.id, reused: true });
     await prisma.professor.update({ where: { id: professor.id }, data: { status: "QUEUED" } });
-    if (settings.AUTO_SEND && (latest.relevanceScore ?? 0) >= settings.AUTOPILOT_MIN_SCORE) {
-      await sleep(jitterDelayMs());
-      await sendApprovedDraft(draft.id, { autopilot: true });
-    }
     return { researched: true, qualified: true, queued: true };
   }
-  return { researched: true, qualified: true, queued: false };
+
+  logger.info("qualification_result", { professorId: professor.id, qualified: true });
+  try {
+    const settings = await getAppSettings();
+    const email = generateGroundedEmail({
+      professorLastName: professor.lastName,
+      professorFullName: professor.fullName,
+      topics: topics.length ? topics : aiTopics,
+      researchSummary: analysis.research_summary,
+      student: input.student,
+      evidenceTexts: evidenceRows.map((row) => row.extractedText),
+      availabilitySentence: settings.AVAILABILITY_SENTENCE,
+    });
+    const latest = await prisma.professor.findUniqueOrThrow({ where: { id: professor.id } });
+    const alreadyContacted = latest.email ? await isInCooldown(latest.email) : false;
+    const failures = validateEmailDraft({
+      professorName: latest.fullName,
+      professorEmail: latest.email,
+      subject: email.subject,
+      body: email.body,
+      topics: topics.length ? topics : aiTopics,
+      evidenceTexts: evidenceRows.map((row) => row.extractedText),
+      evidenceUrls: evidenceRows.map((row) => row.url),
+      student: input.student,
+      resumeAvailable: resumeExists(),
+      relevanceScore: latest.relevanceScore ?? 0,
+      minScore: 0,
+      insufficientEvidence: false,
+      alreadyContacted,
+      allowGenericInbox: latest.allowGenericInbox,
+      availabilitySentence: settings.AVAILABILITY_SENTENCE,
+      forQueue: true,
+    });
+
+    const blockingCodes = new Set([
+      "invalid_email",
+      "generic_inbox",
+      "missing_resume",
+      "unsupported_student_claim",
+      "placeholder",
+      "duplicate_recipient",
+    ]);
+    const blocking = failures.filter((item) => blockingCodes.has(item.code));
+    const draft = await prisma.emailDraft.create({
+      data: {
+        professorId: professor.id,
+        discoveryRunId: input.runId,
+        subject: email.subject,
+        body: email.body,
+        personalizedTopics: JSON.stringify(email.personalized_topics),
+        studentClaims: JSON.stringify(email.student_claims),
+        validationErrors: JSON.stringify(failures),
+        validationPassed: failures.length === 0,
+        status: blocking.length ? "VALIDATION_FAILED" : "QUEUED",
+        failureReason: blocking[0]?.message ?? failures[0]?.message,
+      },
+    });
+    logger.info(blocking.length ? "validation_failed" : "validation_passed", {
+      draftId: draft.id,
+      professorId: professor.id,
+      failures: failures.map((item) => item.code),
+    });
+    logger.info("draft_generated", { draftId: draft.id, professorId: professor.id });
+
+    if (blocking.length === 0) {
+      await prisma.professor.update({ where: { id: professor.id }, data: { status: "QUEUED" } });
+      if (failures.length === 0 && settings.AUTO_SEND && (latest.relevanceScore ?? 0) >= settings.AUTOPILOT_MIN_SCORE) {
+        await sleep(jitterDelayMs());
+        await sendApprovedDraft(draft.id, { autopilot: true });
+      }
+      return { researched: true, qualified: true, queued: true };
+    }
+    return { researched: true, qualified: true, queued: false };
+  } catch (error) {
+    logger.error("draft_generation_failed", {
+      professorId: professor.id,
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    return { researched: true, qualified: true, queued: false };
+  }
 }
 
 export async function sendApprovedDraft(draftId: string, options?: { autopilot?: boolean }) {

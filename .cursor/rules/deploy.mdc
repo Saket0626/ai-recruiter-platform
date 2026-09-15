@@ -1,0 +1,12 @@
+---
+description: Commit and deploy every ResearchReach change to Railway
+alwaysApply: true
+---
+
+# Deploy every change
+
+After any code or docs change the user asked for, commit it, push to GitHub `main`, and let Railway deploy. Do not wait to be asked.
+
+Never commit `.env`, `.env.local`, resumes, tokens, or database files.
+
+Railway project: `ai-recruiter-platform`. GitHub: `Saket0626/ai-recruiter-platform`. The `web` service deploys from `main`.
