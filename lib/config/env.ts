@@ -28,7 +28,7 @@ const envSchema = z.object({
   SEARCH_API_KEY: z.string().optional().default(""),
   SEARCH_API_URL: z.string().optional().default(""),
   RESUME_PATH: z.string().default("data/resume.pdf"),
-  MAX_EMAILS_PER_DAY: z.coerce.number().int().positive().default(15),
+  MAX_EMAILS_PER_DAY: z.coerce.number().int().positive().max(20).default(20),
   PROFESSOR_COOLDOWN_DAYS: z.coerce.number().int().positive().default(90),
   MIN_RELEVANCE_SCORE: z.coerce.number().int().min(0).max(100).default(65),
   AUTOPILOT_MIN_SCORE: z.coerce.number().int().min(0).max(100).default(80),
