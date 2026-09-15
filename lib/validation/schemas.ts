@@ -58,15 +58,19 @@ export const generatedEmailSchema = z.object({
 export type GeneratedEmail = z.infer<typeof generatedEmailSchema>;
 
 export const studentExperienceSchema = z.object({
+  id: z.string(),
   organization: z.string(),
   role: z.string().optional().default(""),
   summary: z.string(),
+  excerpt: z.string(),
   verbs: z.array(z.string()).default([]),
 });
 
 export const studentProjectSchema = z.object({
+  id: z.string(),
   name: z.string(),
   summary: z.string(),
+  excerpt: z.string(),
   technologies: z.array(z.string()).default([]),
   verbs: z.array(z.string()).default([]),
 });

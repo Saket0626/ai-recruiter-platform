@@ -369,9 +369,9 @@ async function persistAndResearch(input: {
     hasCurrentActivity: analysis.current_projects.length > 0 || /202[3-9]|2026/.test(combinedText),
   });
   const latestEmail = (await prisma.professor.findUnique({ where: { id: professor.id }, select: { email: true } }))?.email;
-  const genericInbox = latestEmail ? isGenericInbox(latestEmail) : true;
+  const genericInbox = latestEmail ? isGenericInbox(latestEmail) : false;
   const insufficient =
-    analysis.insufficient_evidence || topics.length === 0 || scored.score < 20 || !latestEmail || genericInbox;
+    analysis.insufficient_evidence || topics.length === 0 || scored.score < 20 || !latestEmail;
   const status = insufficient ? "INSUFFICIENT_EVIDENCE" : scored.score >= input.minScore ? "QUALIFIED" : "RESEARCHED";
 
   await prisma.professor.update({
@@ -396,6 +396,7 @@ async function persistAndResearch(input: {
   }
 
   logger.info("qualification_result", { professorId: professor.id, qualified: true });
+  const settings = await getAppSettings();
   const email = generateGroundedEmail({
     professorLastName: professor.lastName,
     professorFullName: professor.fullName,
@@ -403,8 +404,10 @@ async function persistAndResearch(input: {
     researchSummary: analysis.research_summary,
     student: input.student,
     evidenceTexts: evidenceRows.map((row) => row.extractedText),
+    availabilitySentence: settings.AVAILABILITY_SENTENCE,
   });
   const latest = await prisma.professor.findUniqueOrThrow({ where: { id: professor.id } });
+  const alreadyContacted = latest.email ? await isInCooldown(latest.email) : false;
   const failures = validateEmailDraft({
     professorName: latest.fullName,
     professorEmail: latest.email,
@@ -418,6 +421,9 @@ async function persistAndResearch(input: {
     relevanceScore: latest.relevanceScore ?? 0,
     minScore: input.minScore,
     insufficientEvidence: insufficient,
+    alreadyContacted,
+    allowGenericInbox: latest.allowGenericInbox,
+    availabilitySentence: settings.AVAILABILITY_SENTENCE,
   });
 
   const draft = await prisma.emailDraft.create({
@@ -443,7 +449,6 @@ async function persistAndResearch(input: {
 
   if (failures.length === 0) {
     await prisma.professor.update({ where: { id: professor.id }, data: { status: "QUEUED" } });
-    const settings = await getAppSettings();
     if (settings.AUTO_SEND && (latest.relevanceScore ?? 0) >= settings.AUTOPILOT_MIN_SCORE) {
       await sleep(jitterDelayMs());
       await sendApprovedDraft(draft.id, { autopilot: true });
@@ -470,6 +475,9 @@ export async function sendApprovedDraft(draftId: string, options?: { autopilot?:
     autoSend: settings.AUTO_SEND,
     resumeSha256: draft.resumeSha256,
     currentResumeSha256,
+    contentSha256: draft.contentSha256,
+    subject: draft.subject,
+    body: draft.body,
   });
 
   if (await dailyCapReached()) {
@@ -492,6 +500,10 @@ export async function sendApprovedDraft(draftId: string, options?: { autopilot?:
     relevanceScore: draft.professor.relevanceScore ?? 0,
     minScore: options?.autopilot ? settings.AUTOPILOT_MIN_SCORE : settings.MIN_RELEVANCE_SCORE,
     insufficientEvidence: draft.professor.insufficientEvidence,
+    alreadyContacted: Boolean(draft.professor.email && (await isInCooldown(draft.professor.email))),
+    allowGenericInbox: draft.professor.allowGenericInbox,
+    autopilot: options?.autopilot,
+    availabilitySentence: settings.AVAILABILITY_SENTENCE,
   });
   if (failures.length) {
     await prisma.emailDraft.update({
@@ -503,6 +515,7 @@ export async function sendApprovedDraft(draftId: string, options?: { autopilot?:
         failureReason: failures.map((item) => item.message).join(" "),
         approvedAt: null,
         resumeSha256: null,
+        contentSha256: null,
       },
     });
     throw new Error(failures[0]?.message ?? "Quality gate failed");
@@ -539,6 +552,7 @@ export async function sendApprovedDraft(draftId: string, options?: { autopilot?:
           body: draft.body,
           status: "SUBMITTING",
           dryRun: settings.DRY_RUN,
+          attachmentSha256: currentResumeSha256,
         },
       });
     });

@@ -1,0 +1,1 @@
+ALTER TABLE "Professor" ADD COLUMN IF NOT EXISTS "allowGenericInbox" BOOLEAN NOT NULL DEFAULT false;

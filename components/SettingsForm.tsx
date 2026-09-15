@@ -9,6 +9,7 @@ type Settings = {
   PROFESSOR_COOLDOWN_DAYS: number;
   MIN_RELEVANCE_SCORE: number;
   AUTOPILOT_MIN_SCORE: number;
+  AVAILABILITY_SENTENCE: string;
 };
 
 export function SettingsForm({ settings }: { settings: Settings }) {
@@ -88,6 +89,17 @@ export function SettingsForm({ settings }: { settings: Settings }) {
           />
         </label>
       </div>
+      <label className="text-sm block">
+        Confirmed availability sentence
+        <textarea
+          className="mt-1 min-h-20 w-full rounded-xl border border-line px-3 py-2"
+          value={form.AVAILABILITY_SENTENCE}
+          onChange={(event) => setForm({ ...form, AVAILABILITY_SENTENCE: event.target.value })}
+        />
+      </label>
+      <p className="text-sm text-muted">
+        Emails must use this sentence. Change it when your availability changes, then regenerate drafts.
+      </p>
       <button className="rr-btn rr-btn-primary" type="submit">Save settings</button>
       {message ? <p className="text-sm text-muted">{message}</p> : null}
     </form>

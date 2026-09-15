@@ -136,6 +136,12 @@ export function isResumeSupportedClaim(claim: string, profile: StudentProfile): 
 } {
   const corpus = collectResumeCorpus(profile);
   const lower = claim.toLowerCase();
+  if (/(88k|88,000|70%)/i.test(claim) && !/(88k|88,000|70%)/i.test(profile.resumeText)) {
+    return {
+      ok: false,
+      reason: "Resume does not support the 88K-record pipeline or 70% ClinicalHours claims.",
+    };
+  }
   const entities = namedEntities(profile);
 
   for (const [resumeVerb, claimVerb] of UPGRADE_PAIRS) {

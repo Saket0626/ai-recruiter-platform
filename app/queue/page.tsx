@@ -35,6 +35,10 @@ export default async function QueuePage() {
               <p className="text-sm text-muted">{draft.professor.university} · score {draft.professor.relevanceScore}</p>
               <p className="text-sm">{draft.professor.relevanceExplanation}</p>
               <p className="text-sm"><span className="text-muted">Topics:</span> {topics.join(", ")}</p>
+              <p className="text-sm">
+                <span className="text-muted">Resume bound:</span>{" "}
+                {draft.resumeSha256 ? `${draft.resumeSha256.slice(0, 12)}…` : "not bound until approval"}
+              </p>
               <ul className="space-y-2 text-sm">
                 {draft.professor.evidence.map((item) => (
                   <li key={item.id}>

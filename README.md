@@ -100,7 +100,7 @@ The app deploys to Railway with the Dockerfile in this repo.
 3. Set `GOOGLE_REDIRECT_URI` to `https://<the-actual-Railway-host>/api/auth/google/callback` using the URL Railway assigned. Do not guess a domain. The current live host, if unchanged, is `https://web-production-3b016.up.railway.app`.
 4. `DRY_RUN` stays true until you turn it off. Production refuses anonymous access unless `APP_ACCESS_SECRET` is set and the operator unlocks the app. Connecting Gmail does not send a test email.
 
-The resume PDF is not in git and must never be committed. Upload it to the service (or set `RESUME_PATH` to a mounted file such as `/app/resume-data/resume.pdf`) before live sending. Without a resume, sending stays disabled.
+The resume PDF is not in git and must never be committed. It must exist at `data/resume.pdf` locally. On Railway the same file is stored on `web-volume` at `/app/resume-data/resume.pdf` and copied to `/app/data/resume.pdf` on every start so `RESUME_PATH=data/resume.pdf` stays valid. Without a resume, sending stays disabled.
 
 ## Access gate
 
@@ -116,6 +116,8 @@ Local development with `APP_ACCESS_SECRET` empty skips the gate so `npm run dev`
 ## Resume
 
 Default path: `data/resume.pdf`
+
+The app also looks at `/app/resume-data/resume.pdf` so a Railway volume copy is enough. Startup copies the volume file onto `data/resume.pdf` so that default path stays populated.
 
 Override with:
 

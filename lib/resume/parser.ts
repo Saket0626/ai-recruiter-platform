@@ -1,4 +1,5 @@
 import { DEFAULT_STUDENT } from "@/lib/config/defaults";
+import { factExcerpt, stableFactId } from "@/lib/resume/facts";
 import type { StudentProfile } from "@/lib/validation/schemas";
 
 const SKILL_CANDIDATES = [
@@ -171,21 +172,33 @@ export function parseResumeText(resumeText: string, resumePath: string): Student
   const experienceBlocks = parseBlocks(sections.experience ?? "");
   const projectBlocks = parseBlocks(sections.projects ?? "");
 
-  const experiences = experienceBlocks.map((block) => ({
-    organization: titleBeforeMeta(block.title),
-    role: block.role.replace(/\s+(Dallas|Orlando|Richardson|TX|FL).*$/i, "").trim(),
-    summary: block.bullets.join(" ") || lines(block.title).join(" "),
-    verbs: verbsIn(`${block.role} ${block.bullets.join(" ")}`),
-  }));
+  const experiences = experienceBlocks.map((block) => {
+    const organization = titleBeforeMeta(block.title);
+    const summary = block.bullets.join(" ") || lines(block.title).join(" ");
+    return {
+      id: stableFactId("exp", organization),
+      organization,
+      role: block.role.replace(/\s+(Dallas|Orlando|Richardson|TX|FL).*$/i, "").trim(),
+      summary,
+      excerpt: factExcerpt(summary),
+      verbs: verbsIn(`${block.role} ${block.bullets.join(" ")}`),
+    };
+  });
 
   const experienceNames = new Set(experiences.map((item) => item.organization.toLowerCase()));
   const projects = projectBlocks
-    .map((block) => ({
-      name: titleBeforeMeta(block.title),
-      summary: block.bullets.join(" ") || block.title,
-      technologies: skillsFrom(`${block.title} ${block.bullets.join(" ")}`),
-      verbs: verbsIn(block.bullets.join(" ")),
-    }))
+    .map((block) => {
+      const name = titleBeforeMeta(block.title);
+      const summary = block.bullets.join(" ") || block.title;
+      return {
+        id: stableFactId("proj", name),
+        name,
+        summary,
+        excerpt: factExcerpt(summary),
+        technologies: skillsFrom(`${block.title} ${block.bullets.join(" ")}`),
+        verbs: verbsIn(block.bullets.join(" ")),
+      };
+    })
     .filter((project) => project.name.length > 2 && !experienceNames.has(project.name.toLowerCase()));
 
   const technicalSkills = skillsFrom(sections.skills || resumeText);

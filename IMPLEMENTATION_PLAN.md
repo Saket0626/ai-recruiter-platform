@@ -30,14 +30,16 @@ This file is a requirements checklist against the running ResearchReach app, not
 
 ## Partially implemented
 
-- [ ] Student-claim matching is entity-leak + upgrade-verb based, not a full per-fact mapping.
-- [ ] Hosted caller authorization: shared `APP_ACCESS_SECRET` gate, not per-user Google session auth on every route (documented choice).
-- [ ] Concurrent autopilot/live-send race: advisory lock + unique draft index exist; integration test requires `RUN_DB_INTEGRATION=1`.
+- [x] Student-claim matching uses entity-leak + upgrade-verb checks plus stable fact IDs (`exp:` / `proj:`) stored on each draft.
+- [x] Hosted caller authorization: shared `APP_ACCESS_SECRET` gate, not per-user Google session auth on every route (documented choice).
+- [x] Concurrent autopilot/live-send race: advisory lock + unique draft index exist; integration test requires `RUN_DB_INTEGRATION=1`.
+- [x] Availability wording is a Settings field and is quality-gated.
+- [x] Generic inboxes can be allowed only by an explicit professor-page override; Autopilot still cannot send to them.
 
 ## Not started or not verified
 
 - [ ] Live Gmail send in automated tests (forbidden).
-- [ ] Official resume file on Railway after git-history cleanup (must be mounted by the operator).
+- [x] Official resume file on Railway after git-history cleanup (volume `/app/resume-data/resume.pdf` copied to `data/resume.pdf` at boot). Still not in git.
 
 ## User-dependent setup
 

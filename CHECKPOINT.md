@@ -22,7 +22,7 @@ This checkpoint:
 - A GitHub Actions workflow was prepared but not pushed: the GitHub token lacks `workflow` scope. `npm test` still fails if a user resume is tracked.
 - Treats the public GitHub copy as potentially crawled or cached. Rotating resume contact details is a user decision. Code cannot unsay a public blob.
 
-The real resume belongs only on the local machine and a Railway volume/mount (`RESUME_PATH`). Tests use generated fixtures, not the official PDF.
+The real resume belongs only on the local machine and a Railway volume/mount (`RESUME_PATH`). Tests use generated fixtures, not the official PDF. The live Railway service copies `/app/resume-data/resume.pdf` onto `/app/data/resume.pdf` at boot so the default path stays populated.
 
 ## Requirements completed (behavior checked in code/tests)
 
@@ -62,7 +62,7 @@ The real resume belongs only on the local machine and a Railway volume/mount (`R
 
 **Railway** service `web` from GitHub `main`: https://web-production-3b016.up.railway.app
 
-After this history rewrite, the resume is **not** in the Docker image. Set `RESUME_PATH` to a mounted file and upload the PDF there before live sending.
+After this history rewrite, the resume is **not** in the Docker image. Keep `data/resume.pdf` locally (gitignored). On Railway keep the same file on `web-volume` at `/app/resume-data/resume.pdf`; startup copies it to `/app/data/resume.pdf` so `RESUME_PATH=data/resume.pdf` stays valid.
 
 Do not paste Google client secrets or `APP_ACCESS_SECRET` into GitHub.
 
@@ -73,7 +73,7 @@ Do not paste Google client secrets or `APP_ACCESS_SECRET` into GitHub.
 
 ## Validation commands
 
-Ran 2026-09-14 on `cursor/implementation-checkpoint`:
+Ran 2026-09-15:
 
 ```
 npx tsc --noEmit
@@ -91,13 +91,13 @@ Result: **passed** (0 errors).
 npx vitest run
 ```
 
-Result: **13 files passed, 1 skipped** (`tests/concurrency.integration.test.ts` without `RUN_DB_INTEGRATION`). **102 tests passed**, 1 skipped. Gmail/OAuth/transport mocked. No real email sent.
+Result: **14 files passed, 1 skipped** (`tests/concurrency.integration.test.ts` without `RUN_DB_INTEGRATION`). **110 tests passed**, 1 skipped. Gmail/OAuth/transport mocked. No real email sent.
 
 ```
 npm run build
 ```
 
-Result: **passed** (`prisma generate && next build`). Playwright optional-import warning is gone. `LayoutProps` was replaced with `React.ReactNode` so typecheck does not depend on generated Next types.
+Result: **passed** (`prisma generate && next build`).
 
 ## Next subsystem
 

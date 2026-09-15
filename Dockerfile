@@ -32,12 +32,12 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/data ./data
-
-RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/start-web.sh ./scripts/start-web.sh
+RUN chmod +x /app/scripts/start-web.sh && mkdir -p /app/data /app/resume-data && chown -R nextjs:nodejs /app/data /app/scripts
 
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node server.js"]
+CMD ["/app/scripts/start-web.sh"]

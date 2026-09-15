@@ -3,6 +3,15 @@ import { z } from "zod";
 import { getAppSettings, setSetting } from "@/lib/db/settings";
 import { publicError } from "@/lib/security/errors";
 import { requireMutatingAccess } from "@/lib/security/access";
+import { studentIdentityOverrideSchema } from "@/lib/resume/profile-overrides";
+
+const availabilitySchema = z
+  .string()
+  .trim()
+  .min(20)
+  .max(240)
+  .refine((value) => !/https?:\/\//i.test(value), "Availability cannot include a URL.")
+  .refine((value) => !/[\u2014\u2013]/.test(value), "Availability cannot include an em dash.");
 
 const settingsPatchSchema = z.object({
   AUTO_SEND: z.boolean().optional(),
@@ -11,6 +20,8 @@ const settingsPatchSchema = z.object({
   PROFESSOR_COOLDOWN_DAYS: z.number().int().positive().max(3650).optional(),
   MIN_RELEVANCE_SCORE: z.number().int().min(0).max(100).optional(),
   AUTOPILOT_MIN_SCORE: z.number().int().min(0).max(100).optional(),
+  AVAILABILITY_SENTENCE: availabilitySchema.optional(),
+  studentProfileOverrides: studentIdentityOverrideSchema.optional(),
 });
 
 export async function GET(request: Request) {
@@ -32,6 +43,12 @@ export async function POST(request: Request) {
     }
     if (parsed.MIN_RELEVANCE_SCORE !== undefined) await setSetting("MIN_RELEVANCE_SCORE", String(parsed.MIN_RELEVANCE_SCORE));
     if (parsed.AUTOPILOT_MIN_SCORE !== undefined) await setSetting("AUTOPILOT_MIN_SCORE", String(parsed.AUTOPILOT_MIN_SCORE));
+    if (parsed.AVAILABILITY_SENTENCE !== undefined) {
+      await setSetting("AVAILABILITY_SENTENCE", parsed.AVAILABILITY_SENTENCE);
+    }
+    if (parsed.studentProfileOverrides !== undefined) {
+      await setSetting("STUDENT_PROFILE_OVERRIDES", JSON.stringify(parsed.studentProfileOverrides));
+    }
     return NextResponse.json({ settings: await getAppSettings() });
   } catch (error) {
     return NextResponse.json({ error: publicError(error) }, { status: 400 });

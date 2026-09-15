@@ -1,10 +1,12 @@
 import { familyForTopics } from "@/lib/research/scorer";
 import { extractGroundedResearchDetail } from "@/lib/email/research-detail";
 import { sanitizeGeneratedText } from "@/lib/email/style";
+import { DEFAULT_AVAILABILITY_SENTENCE } from "@/lib/config/defaults";
 import type { GeneratedEmail, StudentProfile } from "@/lib/validation/schemas";
 import { generatedEmailSchema } from "@/lib/validation/schemas";
 
 type StudentWork = {
+  id: string;
   name: string;
   kind: "experience" | "project";
   role: string;
@@ -27,12 +29,14 @@ function honorific(lastName: string, fullName?: string) {
 function allWork(profile: StudentProfile): StudentWork[] {
   return [
     ...profile.experiences.map((item) => ({
+      id: item.id,
       name: item.organization,
       kind: "experience" as const,
       role: item.role ?? "",
       summary: item.summary,
     })),
     ...profile.projects.map((item) => ({
+      id: item.id,
       name: item.name,
       kind: "project" as const,
       role: "",
@@ -163,6 +167,7 @@ export function generateGroundedEmail(input: {
   researchSummary: string;
   student: StudentProfile;
   evidenceTexts?: string[];
+  availabilitySentence?: string;
 }): GeneratedEmail {
   const topics = input.topics.slice(0, 3);
   const topicPhrase = formatTopics(topics);
@@ -172,6 +177,7 @@ export function generateGroundedEmail(input: {
     evidenceTexts: input.evidenceTexts,
   });
   const studentName = input.student.name.split(" ")[0] || "Saket";
+  const availability = (input.availabilitySentence ?? DEFAULT_AVAILABILITY_SENTENCE).replace(/[.]+$/, "");
   const body = sanitizeGeneratedText(
     [
       `Hello ${honorific(input.professorLastName, input.professorFullName)},`,
@@ -180,7 +186,7 @@ export function generateGroundedEmail(input: {
       ``,
       experienceParagraph(topics, input.student),
       ``,
-      `${connectionParagraph(topics, labWork, input.student)} I have attached my resume for your review. I am available to start immediately and continue through the spring and beyond. I can contribute a few hours each week and I am hoping to learn how your group approaches this work in practice. Thank you for your time and consideration!`,
+      `${connectionParagraph(topics, labWork, input.student)} I have attached my resume for your review. ${availability}. I can contribute a few hours each week and I am hoping to learn how your group approaches this work in practice. Thank you for your time and consideration!`,
       ``,
       `Sincerely,`,
       studentName,
@@ -203,15 +209,15 @@ export function generateGroundedEmail(input: {
     subject: sanitizeGeneratedText(subject),
     body,
     personalized_topics: topics,
-    student_claims: extractClaims(body),
+    student_claims: extractClaims(body, input.student),
   });
 }
 
-function extractClaims(body: string) {
-  return body
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => /clinicalhours|canvas companion|chartwise|cloud of goods|helped|built|python|typescript/i.test(line));
+function extractClaims(body: string, profile: StudentProfile) {
+  const lower = body.toLowerCase();
+  return allWork(profile)
+    .filter((work) => work.name.length > 2 && lower.includes(work.name.toLowerCase()))
+    .map((work) => work.id);
 }
 
 export function wordCount(text: string) {

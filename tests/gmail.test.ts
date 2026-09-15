@@ -25,6 +25,8 @@ vi.mock("@/lib/db/settings", () => ({
     PROFESSOR_COOLDOWN_DAYS: 90,
     MIN_RELEVANCE_SCORE: 65,
     AUTOPILOT_MIN_SCORE: 80,
+    AVAILABILITY_SENTENCE: "I am available to start immediately and continue through the spring and beyond.",
+    studentProfileOverrides: {},
   })),
 }));
 
@@ -57,6 +59,8 @@ beforeEach(() => {
     PROFESSOR_COOLDOWN_DAYS: 90,
     MIN_RELEVANCE_SCORE: 65,
     AUTOPILOT_MIN_SCORE: 80,
+    AVAILABILITY_SENTENCE: "I am available to start immediately and continue through the spring and beyond.",
+    studentProfileOverrides: {},
   });
 });
 
@@ -212,6 +216,8 @@ describe("GmailEmailProvider", () => {
       PROFESSOR_COOLDOWN_DAYS: 90,
       MIN_RELEVANCE_SCORE: 65,
       AUTOPILOT_MIN_SCORE: 80,
+      AVAILABILITY_SENTENCE: "I am available to start immediately and continue through the spring and beyond.",
+      studentProfileOverrides: {},
     });
     const fetchImpl = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(
       async () => new Response(JSON.stringify({ id: "msg-1" }), { status: 200 }),

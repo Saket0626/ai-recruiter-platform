@@ -1,4 +1,4 @@
-import { assertResumeHashMatches } from "@/lib/resume/hash";
+import { assertResumeHashMatches, hashDraftContent } from "@/lib/resume/hash";
 
 export function assertDraftSendable(input: {
   status: string;
@@ -6,6 +6,9 @@ export function assertDraftSendable(input: {
   autoSend: boolean;
   resumeSha256?: string | null;
   currentResumeSha256?: string;
+  contentSha256?: string | null;
+  subject?: string;
+  body?: string;
 }) {
   if (input.status === "REJECTED") {
     throw new Error("Rejected drafts cannot be sent.");
@@ -25,6 +28,11 @@ export function assertDraftSendable(input: {
         throw new Error("Resume PDF is missing. Sending is disabled.");
       }
       assertResumeHashMatches(input.resumeSha256, input.currentResumeSha256);
+      if (input.contentSha256 && input.subject != null && input.body != null) {
+        if (input.contentSha256 !== hashDraftContent(input.subject, input.body)) {
+          throw new Error("Draft text changed after approval. Approve the draft again.");
+        }
+      }
     }
     return;
   }
@@ -35,6 +43,11 @@ export function assertDraftSendable(input: {
     throw new Error("Resume PDF is missing. Sending is disabled.");
   }
   assertResumeHashMatches(input.resumeSha256, input.currentResumeSha256);
+  if (input.contentSha256 && input.subject != null && input.body != null) {
+    if (input.contentSha256 !== hashDraftContent(input.subject, input.body)) {
+      throw new Error("Draft text changed after approval. Approve the draft again.");
+    }
+  }
 }
 
 export function professorStatusAfterSend(dryRun: boolean, ok: boolean) {

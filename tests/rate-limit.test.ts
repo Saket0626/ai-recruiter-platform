@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cooldownActiveFrom, dailyCapReachedFromCount, jitterDelayMs } from "@/lib/email/rate-limit-policy";
+import { cooldownActiveFrom, dailyCapReachedFromCount, jitterDelayMs, startOfSendDay } from "@/lib/email/rate-limit-policy";
 
 describe("production rate limits and cooldown", () => {
   it("enforces a 90 day cooldown using the production helper", () => {
@@ -20,5 +20,10 @@ describe("production rate limits and cooldown", () => {
     const delay = jitterDelayMs();
     expect(delay).toBeGreaterThanOrEqual(1500);
     expect(delay).toBeLessThan(5000);
+  });
+
+  it("starts the send day at America/Chicago midnight", () => {
+    const start = startOfSendDay(new Date("2026-09-15T18:00:00-05:00"));
+    expect(start.toISOString()).toBe("2026-09-15T05:00:00.000Z");
   });
 });

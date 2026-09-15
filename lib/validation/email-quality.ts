@@ -4,6 +4,7 @@ import { wordCount } from "@/lib/email/generator";
 import { draftUsesResearchDetail, extractGroundedResearchDetail } from "@/lib/email/research-detail";
 import { topicSupportedByEvidence } from "@/lib/research/keywords";
 import { styleFailures } from "@/lib/email/style";
+import { DEFAULT_AVAILABILITY_SENTENCE } from "@/lib/config/defaults";
 import type { StudentProfile } from "@/lib/validation/schemas";
 
 export type QualityFailure = {
@@ -36,15 +37,33 @@ export function validateEmailDraft(input: {
   relevanceScore: number;
   minScore: number;
   insufficientEvidence: boolean;
+  alreadyContacted?: boolean;
+  allowGenericInbox?: boolean;
+  autopilot?: boolean;
+  availabilitySentence?: string;
 }): QualityFailure[] {
   const failures: QualityFailure[] = [];
   const email = input.professorEmail ? normalizeEmail(input.professorEmail) : "";
   const lastName = input.professorName.trim().split(/\s+/).at(-1) ?? "";
+  const availability = (input.availabilitySentence ?? DEFAULT_AVAILABILITY_SENTENCE).replace(/[.]+$/, "");
 
   if (!email || !isValidEmailShape(email)) {
     failures.push({ code: "invalid_email", message: "Professor email is missing or invalid." });
   } else if (isGenericInbox(email)) {
-    failures.push({ code: "generic_inbox", message: "Address looks like a generic department inbox." });
+    if (input.autopilot || !input.allowGenericInbox) {
+      failures.push({
+        code: "generic_inbox",
+        message: input.autopilot
+          ? "Autopilot cannot send to a generic department inbox."
+          : "Address looks like a generic department inbox. Approve that exception on the professor page first.",
+      });
+    }
+  }
+  if (input.alreadyContacted) {
+    failures.push({
+      code: "duplicate_recipient",
+      message: "This professor was already contacted within the cooldown window.",
+    });
   }
   if (!input.resumeAvailable) {
     failures.push({ code: "missing_resume", message: "Resume PDF is missing. Sending is disabled." });
@@ -66,6 +85,12 @@ export function validateEmailDraft(input: {
   }
   if (!/attached my resume/i.test(input.body)) {
     failures.push({ code: "missing_resume_sentence", message: "Email does not mention the attached resume." });
+  }
+  if (!input.body.includes(availability)) {
+    failures.push({
+      code: "missing_availability",
+      message: "Email does not use the confirmed availability sentence from Settings.",
+    });
   }
   if (/\[insert|tbd|todo|lorem ipsum|professor x\]/i.test(input.body) || /\[insert|tbd|todo\]/i.test(input.subject)) {
     failures.push({ code: "placeholder", message: "Email contains placeholder text." });

@@ -18,10 +18,11 @@ export function ResumeProfile({ profile }: { profile: StudentProfile }) {
           <h3 className="font-semibold">Experience parsed from the PDF</h3>
           <ul className="mt-2 space-y-2">
             {profile.experiences.map((item) => (
-              <li key={`${item.organization}-${item.role}`}>
+              <li key={`${item.id}`}>
                 <strong>{item.organization}</strong>
                 {item.role ? ` · ${item.role}` : ""}
-                <p className="mt-1 text-muted">{item.summary}</p>
+                <p className="mt-1 text-xs text-muted">Fact {item.id}</p>
+                <p className="mt-1 text-muted">{item.excerpt || item.summary}</p>
               </li>
             ))}
           </ul>
@@ -32,9 +33,10 @@ export function ResumeProfile({ profile }: { profile: StudentProfile }) {
           <h3 className="font-semibold">Projects parsed from the PDF</h3>
           <ul className="mt-2 space-y-2">
             {profile.projects.map((item) => (
-              <li key={item.name}>
+              <li key={item.id}>
                 <strong>{item.name}</strong>
-                <p className="mt-1 text-muted">{item.summary}</p>
+                <p className="mt-1 text-xs text-muted">Fact {item.id}</p>
+                <p className="mt-1 text-muted">{item.excerpt || item.summary}</p>
               </li>
             ))}
           </ul>

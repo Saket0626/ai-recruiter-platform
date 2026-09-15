@@ -2,16 +2,15 @@ import { prisma } from "@/lib/db/prisma";
 import { getAppSettings } from "@/lib/db/settings";
 import { normalizeEmail } from "@/lib/security/email";
 import { realContactStatuses } from "@/lib/email/send-gate";
-import { cooldownActiveFrom, dailyCapReachedFromCount, jitterDelayMs } from "@/lib/email/rate-limit-policy";
+import { cooldownActiveFrom, dailyCapReachedFromCount, jitterDelayMs, startOfSendDay, SEND_DAY_TIMEZONE } from "@/lib/email/rate-limit-policy";
 import type { Prisma, PrismaClient } from "@prisma/client";
 
-export { cooldownActiveFrom, dailyCapReachedFromCount, jitterDelayMs };
+export { cooldownActiveFrom, dailyCapReachedFromCount, jitterDelayMs, startOfSendDay, SEND_DAY_TIMEZONE };
 
 type DbClient = PrismaClient | Prisma.TransactionClient;
 
 export async function sentCountToday(db: DbClient = prisma) {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
+  const start = startOfSendDay();
   return db.emailSend.count({
     where: {
       dryRun: false,

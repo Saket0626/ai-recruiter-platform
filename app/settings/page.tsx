@@ -3,6 +3,7 @@ import { getGoogleConnectionView } from "@/lib/google/oauth";
 import { loadStudentProfile } from "@/lib/resume/service";
 import { ResumeProfile } from "@/components/ResumeProfile";
 import { SettingsForm } from "@/components/SettingsForm";
+import { StudentProfileForm } from "@/components/StudentProfileForm";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,17 @@ export default async function SettingsPage({
           <>
             <p className="mt-2 text-sm text-muted">Using {resume.profile.resumePath}. Outbound emails attach this PDF.</p>
             <ResumeProfile profile={resume.profile} />
+            <StudentProfileForm
+              parsed={{
+                name: resume.profile.name,
+                university: resume.profile.university,
+                degree: resume.profile.degree,
+                minor: resume.profile.minor,
+                graduationDate: resume.profile.graduationDate,
+                currentStatus: resume.profile.currentStatus,
+              }}
+              overrides={settings.studentProfileOverrides}
+            />
           </>
         ) : (
           <p className="mt-2 text-sm text-[#9f1239]">{resume.error}</p>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
-import { sentCountToday } from "@/lib/email/rate-limit";
+import { sentCountToday, SEND_DAY_TIMEZONE } from "@/lib/email/rate-limit";
 import { loadStudentProfile } from "@/lib/resume/service";
 import { getAppSettings } from "@/lib/db/settings";
 import { ResumeProfile } from "@/components/ResumeProfile";
@@ -39,7 +39,7 @@ export default async function DashboardPage() {
         <StatCard label="Approved" value={approved} />
         <StatCard label="Sent" value={sent} hint={settings.DRY_RUN ? "DRY_RUN is on" : "Live Gmail sending"} />
         <StatCard label="Failed sends" value={failed} />
-        <StatCard label="Sent today" value={`${daily}/${settings.MAX_EMAILS_PER_DAY}`} />
+        <StatCard label="Sent today" value={`${daily}/${settings.MAX_EMAILS_PER_DAY}`} hint={`${SEND_DAY_TIMEZONE} midnight`} />
         <StatCard label="Autopilot" value={settings.AUTO_SEND ? "On" : "Off"} hint={`Threshold ${settings.AUTOPILOT_MIN_SCORE}`} />
       </section>
       <section className="grid gap-4 lg:grid-cols-2">

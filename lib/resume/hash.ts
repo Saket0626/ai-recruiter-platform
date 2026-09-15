@@ -6,6 +6,10 @@ export async function hashResumePdf(resumePath: string) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
+export function hashDraftContent(subject: string, body: string) {
+  return createHash("sha256").update(`${subject}\n${body}`).digest("hex");
+}
+
 export function assertResumeHashMatches(storedHash: string | null | undefined, currentHash: string) {
   if (!storedHash) {
     throw new Error("Draft approval is not bound to a resume file. Approve the draft again.");

@@ -7,6 +7,9 @@ export const DEFAULT_STUDENT = {
   currentStatus: "First-year student",
 };
 
+export const DEFAULT_AVAILABILITY_SENTENCE =
+  "I am available to start immediately and continue through the spring and beyond.";
+
 export const DEFAULT_RESEARCH_KEYWORDS = [
   "Artificial Intelligence",
   "AI",

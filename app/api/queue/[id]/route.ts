@@ -4,7 +4,7 @@ import { publicError } from "@/lib/security/errors";
 import { requireMutatingAccess } from "@/lib/security/access";
 import { generateGroundedEmail } from "@/lib/email/generator";
 import { loadStudentProfile, resolveResumePath, resumeExists } from "@/lib/resume/service";
-import { hashResumePdf } from "@/lib/resume/hash";
+import { hashResumePdf, hashDraftContent } from "@/lib/resume/hash";
 import { sendApprovedDraft } from "@/lib/research/pipeline";
 import { logger } from "@/lib/logging/logger";
 import { validateEmailDraft } from "@/lib/validation/email-quality";
@@ -43,6 +43,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
         relevanceScore: existing.professor.relevanceScore ?? 0,
         minScore: settings.MIN_RELEVANCE_SCORE,
         insufficientEvidence: existing.professor.insufficientEvidence,
+        allowGenericInbox: existing.professor.allowGenericInbox,
+        availabilitySentence: settings.AVAILABILITY_SENTENCE,
       })
     : [{ code: "missing_resume", message: resume.error }];
   const draft = await prisma.emailDraft.update({
@@ -53,6 +55,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       status: failures.length ? "VALIDATION_FAILED" : "QUEUED",
       approvedAt: null,
       resumeSha256: null,
+      contentSha256: null,
       validationPassed: failures.length === 0,
       validationErrors: JSON.stringify(failures),
       failureReason: failures[0]?.message,
@@ -82,7 +85,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       const resumeHash = await hashResumePdf(resumePath);
       const updated = await prisma.emailDraft.update({
         where: { id },
-        data: { status: "APPROVED", approvedAt: new Date(), resumeSha256: resumeHash },
+        data: { status: "APPROVED", approvedAt: new Date(), resumeSha256: resumeHash, contentSha256: hashDraftContent(draft.subject, draft.body) },
       });
       await prisma.professor.update({ where: { id: draft.professorId }, data: { status: "APPROVED" } });
       logger.info("approval", { draftId: id, professorId: draft.professorId });
@@ -91,7 +94,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     if (action === "reject") {
       const updated = await prisma.emailDraft.update({
         where: { id },
-        data: { status: "REJECTED", rejectedAt: new Date(), approvedAt: null, resumeSha256: null },
+        data: { status: "REJECTED", rejectedAt: new Date(), approvedAt: null, resumeSha256: null, contentSha256: null },
       });
       await prisma.professor.update({ where: { id: draft.professorId }, data: { status: "REJECTED" } });
       return NextResponse.json({ draft: updated });
@@ -99,6 +102,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     if (action === "regenerate") {
       const resume = await loadStudentProfile();
       if (!resume.ok) return NextResponse.json({ error: resume.error }, { status: 400 });
+      const settings = await getAppSettings();
       const topics = JSON.parse(draft.professor.researchTopics || "[]") as string[];
       const generated = generateGroundedEmail({
         professorLastName: draft.professor.lastName,
@@ -107,8 +111,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         researchSummary: draft.professor.researchSummary ?? "",
         student: resume.profile,
         evidenceTexts: draft.professor.evidence.map((item) => item.extractedText),
+        availabilitySentence: settings.AVAILABILITY_SENTENCE,
       });
-      const settings = await getAppSettings();
       const failures = validateEmailDraft({
         professorName: draft.professor.fullName,
         professorEmail: draft.professor.email,
@@ -122,6 +126,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         relevanceScore: draft.professor.relevanceScore ?? 0,
         minScore: settings.MIN_RELEVANCE_SCORE,
         insufficientEvidence: draft.professor.insufficientEvidence,
+        allowGenericInbox: draft.professor.allowGenericInbox,
+        availabilitySentence: settings.AVAILABILITY_SENTENCE,
       });
       const updated = await prisma.emailDraft.update({
         where: { id },
@@ -136,6 +142,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
           failureReason: failures[0]?.message,
           approvedAt: null,
           resumeSha256: null,
+          contentSha256: null,
         },
       });
       return NextResponse.json({ draft: updated });

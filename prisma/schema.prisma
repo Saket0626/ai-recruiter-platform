@@ -32,6 +32,7 @@ model Professor {
   status                     String
   insufficientEvidence       Boolean  @default(false)
   genericInbox               Boolean  @default(false)
+  allowGenericInbox          Boolean  @default(false)
   identityKey                String   @unique
   lastContactedAt            DateTime?
   createdAt                  DateTime @default(now())
@@ -76,6 +77,7 @@ model EmailDraft {
   createdAt          DateTime  @default(now())
   approvedAt         DateTime?
   resumeSha256       String?
+  contentSha256      String?
   rejectedAt         DateTime?
   sentAt             DateTime?
   professor          Professor     @relation(fields: [professorId], references: [id], onDelete: Cascade)
@@ -98,6 +100,7 @@ model EmailSend {
   failureReason       String?
   graphStatus         String?
   dryRun              Boolean   @default(false)
+  attachmentSha256    String?
   createdAt           DateTime  @default(now())
   sentAt              DateTime?
   professor           Professor  @relation(fields: [professorId], references: [id], onDelete: Cascade)

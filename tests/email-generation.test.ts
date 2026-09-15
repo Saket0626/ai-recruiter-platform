@@ -203,6 +203,37 @@ describe("email generation and quality gates", () => {
     expect(failures.some((item) => item.code === "missing_resume")).toBe(true);
   });
 
+  it("fails the quality gate for a duplicate cooldown recipient", () => {
+    const draft = generateGroundedEmail({
+      professorLastName: "Hamlen",
+      professorFullName: "Kevin Hamlen",
+      topics: ["software security"],
+      researchSummary: "software security",
+      student,
+      evidenceTexts: [
+        "The lab investigates binary rewriting defenses against return-oriented programming attacks. Software security and program analysis are used to harden binaries.",
+      ],
+    });
+    const failures = validateEmailDraft({
+      professorName: "Kevin Hamlen",
+      professorEmail: "hamlen@utdallas.edu",
+      subject: draft.subject,
+      body: draft.body,
+      topics: ["software security"],
+      evidenceTexts: [
+        "The lab investigates binary rewriting defenses against return-oriented programming attacks. Software security and program analysis are used to harden binaries.",
+      ],
+      evidenceUrls: ["https://cs.utdallas.edu/hamlen"],
+      student,
+      resumeAvailable: true,
+      relevanceScore: 80,
+      minScore: 65,
+      insufficientEvidence: false,
+      alreadyContacted: true,
+    });
+    expect(failures.some((item) => item.code === "duplicate_recipient")).toBe(true);
+  });
+
   it("rejects a 320-word draft that the old 120-320 band would have allowed", () => {
     const draft = generateGroundedEmail({
       professorLastName: "Hamlen",
@@ -249,5 +280,86 @@ describe("email generation and quality gates", () => {
     });
     expect(analysis.insufficient_evidence).toBe(true);
     expect(analysis.research_topics.join(" ")).not.toMatch(/ignore all previous/i);
+  });
+
+  it("records student claims as stable resume fact IDs", () => {
+    const security = generateGroundedEmail({
+      professorLastName: "Hamlen",
+      professorFullName: "Kevin Hamlen",
+      topics: ["software security"],
+      researchSummary: "software security",
+      student,
+    });
+    expect(security.student_claims).toContain("exp:clinicalhours");
+  });
+
+  it("uses a user-confirmed availability sentence", () => {
+    const availability = "I am available weekday afternoons this semester and next";
+    const draft = generateGroundedEmail({
+      professorLastName: "Hamlen",
+      professorFullName: "Kevin Hamlen",
+      topics: ["software security"],
+      researchSummary: "software security",
+      student,
+      evidenceTexts: [
+        "The lab investigates binary rewriting defenses against return-oriented programming attacks. Software security and program analysis are used to harden binaries.",
+      ],
+      availabilitySentence: availability,
+    });
+    expect(draft.body).toContain(availability);
+    expect(draft.body).not.toMatch(/continue through the spring and beyond/i);
+    const failures = validateEmailDraft({
+      professorName: "Kevin Hamlen",
+      professorEmail: "hamlen@utdallas.edu",
+      subject: draft.subject,
+      body: draft.body,
+      topics: ["software security"],
+      evidenceTexts: [
+        "The lab investigates binary rewriting defenses against return-oriented programming attacks. Software security and program analysis are used to harden binaries.",
+      ],
+      evidenceUrls: ["https://cs.utdallas.edu/hamlen"],
+      student,
+      resumeAvailable: true,
+      relevanceScore: 80,
+      minScore: 65,
+      insufficientEvidence: false,
+      availabilitySentence: availability,
+    });
+    expect(failures.map((item) => item.code)).not.toContain("missing_availability");
+  });
+
+  it("allows a manually approved generic inbox in review mode but never in autopilot", () => {
+    const draft = generateGroundedEmail({
+      professorLastName: "Hamlen",
+      professorFullName: "Kevin Hamlen",
+      topics: ["software security"],
+      researchSummary: "software security",
+      student,
+      evidenceTexts: [
+        "The lab investigates binary rewriting defenses against return-oriented programming attacks. Software security and program analysis are used to harden binaries.",
+      ],
+    });
+    const base = {
+      professorName: "Kevin Hamlen",
+      professorEmail: "info@utdallas.edu",
+      subject: draft.subject,
+      body: draft.body,
+      topics: ["software security"],
+      evidenceTexts: [
+        "The lab investigates binary rewriting defenses against return-oriented programming attacks. Software security and program analysis are used to harden binaries.",
+      ],
+      evidenceUrls: ["https://cs.utdallas.edu/hamlen"],
+      student,
+      resumeAvailable: true,
+      relevanceScore: 80,
+      minScore: 65,
+      insufficientEvidence: false,
+    };
+    expect(validateEmailDraft({ ...base, allowGenericInbox: true }).some((item) => item.code === "generic_inbox")).toBe(
+      false,
+    );
+    expect(
+      validateEmailDraft({ ...base, allowGenericInbox: true, autopilot: true }).some((item) => item.code === "generic_inbox"),
+    ).toBe(true);
   });
 });

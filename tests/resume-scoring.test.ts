@@ -3,6 +3,7 @@ import { parseResumeText } from "@/lib/resume/parser";
 import { isResumeSupportedClaim } from "@/lib/resume/claims";
 import { professorAnalysisSchema } from "@/lib/validation/schemas";
 import { scoreProfessorRelevance } from "@/lib/research/scorer";
+import { mergeStudentProfile } from "@/lib/resume/profile-overrides";
 
 const resumeText = `
 SAKET
@@ -26,9 +27,12 @@ describe("resume and scoring", () => {
 
   it("parses projects and skills from resume text", () => {
     expect(profile.experiences.map((item) => item.organization)).toEqual(expect.arrayContaining(["ClinicalHours"]));
+    expect(profile.experiences.find((item) => item.organization === "ClinicalHours")?.id).toBe("exp:clinicalhours");
     expect(profile.projects.map((project) => project.name)).toEqual(
       expect.arrayContaining(["Canvas Companion", "ChartWise", "Cloud of Goods"]),
     );
+    expect(profile.projects.find((project) => project.name === "ChartWise")?.id).toBe("proj:chartwise");
+    expect(profile.experiences.find((item) => item.organization === "ClinicalHours")?.excerpt.length).toBeGreaterThan(8);
     expect(profile.projects.map((project) => project.name)).not.toContain("ClinicalHours");
     expect(profile.technicalSkills).toEqual(expect.arrayContaining(["Python", "TypeScript", "Wireshark"]));
   });
@@ -51,6 +55,12 @@ describe("resume and scoring", () => {
     );
     expect(result.ok).toBe(false);
     expect(result.reason).toMatch(/Wireshark/i);
+  });
+
+  it("does not reintroduce unsupported ClinicalHours pipeline or 70% claims", () => {
+    expect(
+      isResumeSupportedClaim("I built an 88K-record ClinicalHours pipeline that reduced duplicated work by 70%.", profile).ok,
+    ).toBe(false);
   });
 
   it("validates structured professor analysis with Zod", () => {
@@ -124,5 +134,15 @@ Languages Python, Java, SQL, JavaScript/TypeScript, HTML/CSS
     });
     expect(ai.score).toBeGreaterThanOrEqual(65);
     expect(security.score).toBeGreaterThanOrEqual(50);
+  });
+
+  it("applies user-confirmed identity corrections without inventing experience", () => {
+    const merged = mergeStudentProfile(profile, {
+      minor: "Cybersecurity (intended, not yet declared)",
+      currentStatus: "First-year student",
+    });
+    expect(merged.minor).toBe("Cybersecurity (intended, not yet declared)");
+    expect(merged.experiences.map((item) => item.id)).toEqual(profile.experiences.map((item) => item.id));
+    expect(merged.projects.map((item) => item.id)).toEqual(profile.projects.map((item) => item.id));
   });
 });

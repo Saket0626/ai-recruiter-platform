@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
+import { DEFAULT_AVAILABILITY_SENTENCE } from "@/lib/config/defaults";
+import { parseStudentIdentityOverrides } from "@/lib/resume/profile-overrides";
 
 export async function getSetting(key: string, fallback: string) {
   const row = await prisma.appSetting.findUnique({ where: { key } });
@@ -22,6 +24,8 @@ export async function getAppSettings() {
   const cooldown = await getSetting("PROFESSOR_COOLDOWN_DAYS", String(env.PROFESSOR_COOLDOWN_DAYS));
   const minScore = await getSetting("MIN_RELEVANCE_SCORE", String(env.MIN_RELEVANCE_SCORE));
   const autopilotMin = await getSetting("AUTOPILOT_MIN_SCORE", String(env.AUTOPILOT_MIN_SCORE));
+  const availability = await getSetting("AVAILABILITY_SENTENCE", DEFAULT_AVAILABILITY_SENTENCE);
+  const overridesRaw = await getSetting("STUDENT_PROFILE_OVERRIDES", "{}");
   return {
     AUTO_SEND: autoSend === "true",
     // Only the canonical explicit opt-out may disable dry run.
@@ -30,5 +34,7 @@ export async function getAppSettings() {
     PROFESSOR_COOLDOWN_DAYS: Number(cooldown),
     MIN_RELEVANCE_SCORE: Number(minScore),
     AUTOPILOT_MIN_SCORE: Number(autopilotMin),
+    AVAILABILITY_SENTENCE: availability.trim() || DEFAULT_AVAILABILITY_SENTENCE,
+    studentProfileOverrides: parseStudentIdentityOverrides(overridesRaw),
   };
 }
