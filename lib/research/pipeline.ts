@@ -517,7 +517,17 @@ async function persistAndResearch(input: {
       professorId: professor.id,
       failures: failures.map((item) => item.code),
     });
-    logger.info("draft_generated", { draftId: draft.id, professorId: professor.id });
+    logger.info("draft_generated", {
+      draftId: draft.id,
+      professorId: professor.id,
+      name: latest.fullName,
+      email: latest.email,
+      university: latest.university,
+      research: evidenceRows[0]?.url ?? latest.facultyPageUrl,
+    });
+    console.log(
+      `DRAFT READY | ${latest.fullName} | ${latest.email} | ${latest.university} | ${evidenceRows[0]?.url ?? latest.facultyPageUrl ?? ""}`,
+    );
 
     if (blocking.length === 0) {
       await prisma.professor.update({ where: { id: professor.id }, data: { status: "QUEUED" } });

@@ -47,7 +47,7 @@ export function isGenericInbox(email: string): boolean {
   if (GENERIC_LOCAL_PARTS.has(localRoot)) return true;
   if (localRoot.endsWith("-office") || localRoot.endsWith("-info") || localRoot.endsWith("-general")) return true;
   if (localRoot.includes("department") || localRoot.includes("admissions") || localRoot.includes("general")) return true;
-  if (/^[a-z]{2,3}\d{6,}$/.test(localRoot)) return true;
+  if (localRoot.includes("uncomment") || localRoot.startsWith("to") && localRoot.includes("comment")) return true;
   return false;
 }
 

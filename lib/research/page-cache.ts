@@ -9,22 +9,27 @@ export async function getCachedPage(url: string) {
   return row;
 }
 
+function stripNullBytes(value: string) {
+  return value.replace(/\u0000/g, "");
+}
+
 export async function putCachedPage(input: {
   url: string;
   body: string;
   statusCode: number;
   contentType?: string | null;
 }) {
+  const body = stripNullBytes(input.body);
   return prisma.pageCache.upsert({
     where: { url: input.url },
     create: {
       url: input.url,
-      body: input.body,
+      body,
       statusCode: input.statusCode,
       contentType: input.contentType ?? "text/html",
     },
     update: {
-      body: input.body,
+      body,
       statusCode: input.statusCode,
       contentType: input.contentType ?? "text/html",
       fetchedAt: new Date(),
