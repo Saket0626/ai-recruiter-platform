@@ -132,7 +132,7 @@ A single send service must revalidate, reserve the recipient and daily slot tran
 
 Never promise exactly-once delivery from a local duplicate check. If the transport outcome is ambiguous after submission, record UNKNOWN and require reconciliation; do not blindly retry and risk duplicate messages. Respect Retry-After for explicit throttling without evading limits. Treat Graph acceptance as accepted, not verified delivered.
 
-Default maximum actual emails/day 15; configurable cooldown 90 days. Define and display the timezone/day boundary. Concurrency must not bypass either limit. Do not automatically schedule repeat contacts at cooldown expiry; new outreach requires fresh eligibility and authorization.
+Hard maximum actual emails/day 20; configurable cooldown 90 days. Stored or environment settings may lower this value but must never raise it above 20. Define and display the timezone/day boundary. Concurrency must not bypass either limit. Do not automatically schedule repeat contacts at cooldown expiry; new outreach requires fresh eligibility and authorization.
 
 ## Review, dry run, autopilot
 
