@@ -3,7 +3,7 @@ set -euo pipefail
 cd /Users/saketamanana/applybot
 
 bot_running() {
-  pgrep -f "scripts/outreach-bot.ts" >/dev/null 2>&1
+  pgrep -f "tsx scripts/outreach-bot.ts" >/dev/null 2>&1
 }
 
 wait_for_bot() {
