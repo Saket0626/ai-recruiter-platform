@@ -1,5 +1,5 @@
 import { getEnv } from "@/lib/config/env";
-import { extractFacultyFromDirectory, extractVisibleText, looksLikePersonName } from "@/lib/research/parser";
+import { extractFacultyFromDirectory, looksLikePersonName } from "@/lib/research/parser";
 import { isSaketRelevantResearch } from "@/lib/research/keywords";
 import { fetchPublicHtml } from "@/lib/search/fetch-public";
 import { isUrlAllowedByRobots } from "@/lib/search/robots";
@@ -43,12 +43,6 @@ export class SeededCrawlerSearchProvider implements SearchProvider {
             snippet: person.snippet,
           });
         }
-      } else {
-        results.push({
-          title: extractVisibleText(page.html).slice(0, 80),
-          url: page.url,
-          snippet: extractVisibleText(page.html).slice(0, 280),
-        });
       }
       if (results.length >= query.maxResults) break;
     }

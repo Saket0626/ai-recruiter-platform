@@ -9,7 +9,7 @@ import {
   outreachPackageFromDraft,
   type OutreachPackage,
 } from "@/lib/bot/packages";
-import { COLLEGES_PER_RUN, MAX_PROFESSORS_PER_COLLEGE, OUTREACH_DOC_URL } from "@/lib/bot/config";
+import { COLLEGES_PER_RUN, MAX_PACKAGES_PER_RUN, MAX_PROFESSORS_PER_COLLEGE, OUTREACH_DOC_URL } from "@/lib/bot/config";
 import { filterNewPackages, loadLedger, mergeSeen, recordPackages, saveLedger } from "@/lib/bot/ledger";
 import { pickNextColleges } from "@/lib/bot/rotation";
 import { seenFromOutreachDoc } from "@/lib/bot/google-doc";
@@ -98,15 +98,15 @@ export async function runOutreachBot(input: {
       department: "Computer Science",
       seedUrls: [],
       researchInterests: SAKET_INTERESTS,
-      maxCandidates: input.maxCandidates ?? batch.colleges.length * MAX_PROFESSORS_PER_COLLEGE,
-      maxCandidatesPerUniversity: MAX_PROFESSORS_PER_COLLEGE,
+      maxCandidates: input.maxCandidates ?? 120,
+      maxCandidatesPerUniversity: Math.min(MAX_PROFESSORS_PER_COLLEGE, 3),
       minScore: 50,
     });
     ledger = { ...ledger, nextCollegeIndex: batch.nextCollegeIndex };
   }
 
   const discovered = await listOutreachPackages(input.reportOnly ? undefined : batch.colleges);
-  const packages = filterNewPackages(discovered, ledger).fresh;
+  const packages = filterNewPackages(discovered, ledger).fresh.slice(0, MAX_PACKAGES_PER_RUN);
   ledger = recordPackages(ledger, packages);
   await saveLedger(ledger);
   const outbox = await writeOutreachOutbox(packages);

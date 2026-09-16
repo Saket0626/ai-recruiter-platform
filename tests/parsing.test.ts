@@ -71,6 +71,24 @@ describe("email extraction and normalization", () => {
     expect(looksLikePersonName("External Affairs")).toBe(false);
     expect(looksLikePersonName("Graduate Office")).toBe(false);
     expect(looksLikePersonName("Clay Shields Position")).toBe(false);
+    expect(looksLikePersonName("Personal Website")).toBe(false);
+    expect(looksLikePersonName("Tobias Höllerer")).toBe(true);
+  });
+
+  it("extracts faculty profile links even without mailto on the directory", () => {
+    const html = `
+      <html><body>
+        <ul>
+          <li><a href="/people/faculty/divyakant-agrawal">Divyakant Agrawal</a></li>
+          <li><a href="/people/faculty/amr-el-abbadi">Amr El Abbadi</a></li>
+          <li><a href="https://www.cs.ucsb.edu/people/faculty/tobias-hollerer">Personal Website</a></li>
+        </ul>
+      </body></html>
+    `;
+    const people = extractFacultyFromDirectory(html, "https://www.cs.ucsb.edu/people/faculty", "ucsb.edu");
+    expect(people.some((person) => person.fullName === "Divyakant Agrawal")).toBe(true);
+    expect(people.some((person) => person.fullName === "Amr El Abbadi")).toBe(true);
+    expect(people.every((person) => person.fullName !== "Personal Website")).toBe(true);
   });
 
   it("uses a stable identity key", () => {

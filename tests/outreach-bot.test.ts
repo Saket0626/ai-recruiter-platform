@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { hasPublishedResearch, publicationLinks, primaryResearchLink } from "@/lib/research/publications";
 import { formatOutreachPackage, outreachPackageFromDraft } from "@/lib/bot/packages";
 import { filterNewPackages, parseSeenFromDocText } from "@/lib/bot/ledger";
-import { pickNextColleges } from "@/lib/bot/rotation";
+import { pickNextColleges, rotationColleges } from "@/lib/bot/rotation";
 import { isSaketRelevantResearch } from "@/lib/research/keywords";
 
 describe("publication evidence", () => {
@@ -135,5 +135,12 @@ Hello
       1,
     );
     expect(colleges[0]).toBe("University of Texas at Dallas");
+  });
+
+  it("keeps Arizona State as the worst allowed college", () => {
+    const names = rotationColleges().map((university) => university.name);
+    expect(names).toContain("Arizona State University");
+    expect(names).toContain("University of Texas at Austin");
+    expect(names).not.toContain("University of Iowa");
   });
 });

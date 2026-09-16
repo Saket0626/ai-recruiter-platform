@@ -22,11 +22,11 @@ Hello Dr. LastName,
 ...
 ```
 
-The bot reads that Google Doc first so the same professor is never written twice. It crawls a fresh batch of colleges each run, with a hard cap of 15 professors per college.
+The bot reads that Google Doc first so the same professor is never written twice. Each hourly run visits 40 colleges at or above Arizona State University, with a hard cap of 15 professors per college and at most 50 drafts.
 
 ```bash
 npm run bot -- --report           # print new packages, do not crawl again
-npm run bot -- --colleges=6       # how many colleges to visit this hour
+npm run bot -- --colleges=40      # default batch size
 npm run bot -- --send             # live Gmail only if DRY_RUN=false
 ```
 

@@ -1,3 +1,4 @@
+import { looksLikePersonName } from "@/lib/research/parser";
 import { primaryResearchLink } from "@/lib/research/publications";
 
 export type OutreachPackage = {
@@ -38,6 +39,7 @@ export function outreachPackageFromDraft(input: {
   resumePath: string;
 }): OutreachPackage | null {
   if (!input.professorEmail) return null;
+  if (!looksLikePersonName(input.professorName)) return null;
   const researchLink =
     primaryResearchLink([...input.evidenceUrls, input.facultyPageUrl ?? ""].filter(Boolean)) ??
     input.facultyPageUrl ??

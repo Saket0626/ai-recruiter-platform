@@ -381,4 +381,31 @@ describe("email generation and quality gates", () => {
       validateEmailDraft({ ...base, allowGenericInbox: true, autopilot: true }).some((item) => item.code === "generic_inbox"),
     ).toBe(true);
   });
+
+  it("does not treat biography, degrees, or awards as lab research", () => {
+    expect(
+      extractGroundedResearchDetail({
+        topics: ["data science", "privacy", "distributed systems"],
+        evidenceTexts: [
+          "computer Science, SUNY at Stony Brook BE (Hons) Electrical Engineering, BITS, India Campus Affiliations 1995-1996 Vice-chair, Graduate Council",
+        ],
+      }),
+    ).toBeNull();
+    expect(
+      extractGroundedResearchDetail({
+        topics: ["data science", "privacy", "distributed systems"],
+        evidenceTexts: [
+          "Awards ACM Fellow AAAS Fellow UCSB Senate Outstanding Mentorship Award for his excellence.",
+        ],
+      }),
+    ).toBeNull();
+    expect(
+      extractGroundedResearchDetail({
+        topics: ["software security"],
+        evidenceTexts: [
+          "The lab investigates binary rewriting defenses against return-oriented programming attacks.",
+        ],
+      }),
+    ).toMatch(/binary rewriting/i);
+  });
 });

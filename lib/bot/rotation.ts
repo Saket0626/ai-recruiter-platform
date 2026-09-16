@@ -1,12 +1,19 @@
-import { COLLEGES_PER_RUN, PREFERRED_COLLEGES } from "@/lib/bot/config";
+import { ASU_WORST_RANK, COLLEGES_PER_RUN, PREFERRED_COLLEGES } from "@/lib/bot/config";
 import { collegeHasCapacity, type OutreachLedger } from "@/lib/bot/ledger";
-import { UNIVERSITIES, getTop100Universities } from "@/lib/universities/catalog";
+import { UNIVERSITIES, getTop100Universities, type University } from "@/lib/universities/catalog";
+
+function asuOrBetter(university: University) {
+  if (PREFERRED_COLLEGES.includes(university.name)) return true;
+  return typeof university.nationalRank === "number" && university.nationalRank <= ASU_WORST_RANK;
+}
 
 export function rotationColleges() {
   const preferred = PREFERRED_COLLEGES.map((name) => UNIVERSITIES.find((university) => university.name === name)).filter(
-    (university): university is NonNullable<typeof university> => Boolean(university),
+    (university): university is University => Boolean(university),
   );
-  const rest = getTop100Universities().filter((university) => !PREFERRED_COLLEGES.includes(university.name));
+  const rest = getTop100Universities().filter(
+    (university) => asuOrBetter(university) && !PREFERRED_COLLEGES.includes(university.name),
+  );
   return [...preferred, ...rest];
 }
 

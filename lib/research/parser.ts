@@ -39,7 +39,7 @@ function splitName(fullName: string) {
 }
 
 const NAME_STOPWORDS =
-  /\b(skip|main|content|search|searchmenu|menu|navigation|about|affairs|facts|figures|maps|accreditations|directory|department|university|people|contact|faculty|office|advising|graduate|position|staff)\b/i;
+  /\b(skip|main|content|search|searchmenu|menu|navigation|about|affairs|facts|figures|maps|accreditations|directory|department|university|people|contact|faculty|office|advising|graduate|position|staff|website|homepage|education|awards|biography|curriculum)\b/i;
 
 export function looksLikePersonName(value: string) {
   const trimmed = value
@@ -49,11 +49,11 @@ export function looksLikePersonName(value: string) {
     .trim();
   if (trimmed.length < 4 || trimmed.length > 70) return false;
   if (NAME_STOPWORDS.test(trimmed)) return false;
-  if (/faculty directory|computer science people|secondary navigation|external affairs/i.test(trimmed)) {
+  if (/faculty directory|computer science people|secondary navigation|external affairs|personal website/i.test(trimmed)) {
     return false;
   }
-  if (/^[A-Z][A-Za-z.'\-]+,\s+[A-Z][A-Za-z.'\-]+/.test(trimmed)) return true;
-  return /^[A-Z][A-Za-z.'\-]+(?:\s+[A-Z]\.){0,2}(?:\s+[A-Z][A-Za-z.'\-]+){1,2}$/.test(trimmed);
+  if (/^[\p{Lu}][\p{L}.'\-]+,\s+[\p{Lu}][\p{L}.'\-]+/u.test(trimmed)) return true;
+  return /^[\p{Lu}][\p{L}.'\-]+(?:\s+[\p{Lu}]\.){0,2}(?:\s+[\p{Lu}][\p{L}.'\-]+){1,2}$/u.test(trimmed);
 }
 
 function extractNameFromText(text: string) {
@@ -139,6 +139,29 @@ export function extractFacultyFromDirectory(html: string, pageUrl: string, unive
       }
     }
   }
+
+  $("a[href]").each((_, node) => {
+    const href = $(node).attr("href") ?? "";
+    if (!href || href.startsWith("mailto:") || href.startsWith("#")) return;
+    const label = $(node).text().replace(/\s+/g, " ").trim();
+    if (!looksLikePersonName(label)) return;
+    if (!/faculty|people|profile|\/~|users\/|directory/i.test(href) && !/\/people\//i.test(href)) return;
+    const names = splitName(label);
+    const key = names.fullName.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    const profileUrl = normalizeUrl(href, pageUrl);
+    results.push({
+      ...names,
+      title: null,
+      email: null,
+      emailSourceUrl: null,
+      facultyPageUrl: profileUrl || pageUrl,
+      labUrl: null,
+      personalWebsite: null,
+      snippet: ($(node).closest("li, article, tr, div").text() || label).replace(/\s+/g, " ").trim().slice(0, 500),
+    });
+  });
 
   return results;
 }

@@ -132,6 +132,7 @@ export async function executeDiscovery(runId: string) {
         currentStage: `DISCOVER:${university.shortName}`,
         progressJson: JSON.stringify(progress),
       });
+      if (progress.queued >= 50) break;
       await discoverOneUniversity({
         university,
         keywords,
