@@ -1,10 +1,9 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { prisma } from "@/lib/db/prisma";
 import { getAppSettings } from "@/lib/db/settings";
 import { loadStudentProfile, resolveResumePath } from "@/lib/resume/service";
 import {
-  formatOutreachDoc,
   formatOutreachPackage,
   outreachPackageFromDraft,
   type OutreachPackage,
@@ -13,12 +12,10 @@ import {
   COLLEGES_PER_RUN,
   MAX_PACKAGES_PER_RUN,
   MAX_PROFESSORS_PER_COLLEGE,
-  OUTREACH_DOC_URL,
 } from "@/lib/bot/config";
-import { syncCursorOutreachDoc } from "@/lib/bot/cursor-doc";
+import { seenFromCursorDoc, syncCursorOutreachDoc } from "@/lib/bot/cursor-doc";
 import { filterNewPackages, loadLedger, mergeSeen, recordPackages, saveLedger } from "@/lib/bot/ledger";
 import { pickNextColleges } from "@/lib/bot/rotation";
-import { seenFromOutreachDoc } from "@/lib/bot/google-doc";
 import { logger } from "@/lib/logging/logger";
 
 const SAKET_INTERESTS = [
@@ -62,21 +59,9 @@ export async function writeOutreachOutbox(packages: OutreachPackage[]) {
   const dir = path.join(process.cwd(), "data/outbox");
   await mkdir(dir, { recursive: true });
   const jsonPath = path.join(dir, "outreach-packages.json");
-  const docPath = path.join(dir, "pending-google-doc.txt");
-  const unsentPath = path.join(dir, "unsent-to-doc.txt");
   await writeFile(jsonPath, `${JSON.stringify(packages, null, 2)}\n`);
-  await writeFile(docPath, packages.length ? `${formatOutreachDoc(packages)}\n` : "");
-  if (packages.length) {
-    let prior = "";
-    try {
-      prior = (await readFile(unsentPath, "utf8")).trim();
-    } catch {
-      prior = "";
-    }
-    const next = [prior, formatOutreachDoc(packages)].filter(Boolean).join("\n\n");
-    await writeFile(unsentPath, `${next}\n`);
-  }
-  return { jsonPath, docPath, unsentPath };
+  const synced = await syncCursorOutreachDoc();
+  return { jsonPath, docPath: synced.path, count: synced.count };
 }
 
 export async function runOutreachBot(input: {
@@ -90,12 +75,12 @@ export async function runOutreachBot(input: {
     throw new Error(resume.error);
   }
 
-  let ledger = mergeSeen(await loadLedger(), await seenFromOutreachDoc());
+  let ledger = mergeSeen(await loadLedger(), await seenFromCursorDoc());
   const batch = pickNextColleges(ledger, input.collegesPerRun ?? COLLEGES_PER_RUN);
 
   if (!input.reportOnly) {
     if (!batch.colleges.length) {
-      throw new Error("Every college in the Top 100 catalog already has 15 professors in the Google Doc.");
+      throw new Error("Every college in the Top 100 catalog already has 15 professors in outreach-drafts.txt.");
     }
     const { runDiscovery } = await import("@/lib/research/pipeline");
     await runDiscovery({
@@ -116,12 +101,11 @@ export async function runOutreachBot(input: {
   ledger = recordPackages(ledger, packages);
   await saveLedger(ledger);
   const outbox = await writeOutreachOutbox(packages);
-  await syncCursorOutreachDoc();
   logger.info("outreach_packages_ready", {
     count: packages.length,
     colleges: batch.colleges,
     outbox: outbox.jsonPath,
-    doc: OUTREACH_DOC_URL,
+    doc: outbox.docPath,
   });
 
   if (input.send && packages.length) {
@@ -144,15 +128,13 @@ export async function runOutreachBot(input: {
     colleges: batch.colleges,
     outbox: outbox.jsonPath,
     pendingDoc: outbox.docPath,
-    unsentDoc: outbox.unsentPath,
-    docUrl: OUTREACH_DOC_URL,
     resumePath: resolveResumePath(),
   };
 }
 
 export function printOutreachPackages(packages: OutreachPackage[]) {
   if (!packages.length) {
-    return "No new unique professors this run. The bot skipped anyone already in the Google Doc and anyone without retrieved published AI/CISTech research.";
+    return "No new unique professors this run. The bot skipped anyone already in outreach-drafts.txt and anyone without retrieved published AI/CISTech research.";
   }
   return packages.map((pkg) => formatOutreachPackage(pkg)).join("\n\n");
 }

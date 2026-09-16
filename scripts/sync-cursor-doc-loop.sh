@@ -1,5 +1,5 @@
 #!/bin/zsh
-set -euo pipefail
+set -uo pipefail
 cd /Users/saketamanana/applybot
 end=$(( $(date +%s) + 36000 ))
 while [ "$(date +%s)" -lt "$end" ]; do

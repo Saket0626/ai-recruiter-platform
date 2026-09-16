@@ -8,7 +8,7 @@ Run it from the terminal:
 npm run bot
 ```
 
-Each new professor is printed in this layout and appended to the shared Google Doc:
+Each new professor is written to `~/.cursor/outreach-drafts.txt` in this layout:
 
 ```
 professor's email: name@university.edu
@@ -22,7 +22,7 @@ Hello Dr. LastName,
 ...
 ```
 
-The bot reads that Google Doc first so the same professor is never written twice. Each hourly run visits 40 colleges at or above Arizona State University, with a hard cap of 15 professors per college and at most 50 drafts.
+The bot reads `~/.cursor/outreach-drafts.txt` first so the same professor is never written twice. Each hourly run visits 40 colleges at or above Arizona State University, with a hard cap of 15 professors per college and at most 50 drafts.
 
 ```bash
 npm run bot -- --report           # print new packages, do not crawl again

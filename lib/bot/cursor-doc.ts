@@ -3,9 +3,19 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { prisma } from "@/lib/db/prisma";
 import { loadStudentProfile } from "@/lib/resume/service";
+import { parseSeenFromDocText } from "@/lib/bot/ledger";
 import { formatOutreachDoc, formatOutreachPackage, outreachPackageFromDraft, type OutreachPackage } from "@/lib/bot/packages";
 
 export const CURSOR_DOC_PATH = path.join(homedir(), ".cursor", "outreach-drafts.txt");
+
+export async function seenFromCursorDoc() {
+  try {
+    const text = await readFile(CURSOR_DOC_PATH, "utf8");
+    return parseSeenFromDocText(text);
+  } catch {
+    return parseSeenFromDocText("");
+  }
+}
 
 export async function appendPackageToCursorDoc(pkg: OutreachPackage) {
   let prior = "";

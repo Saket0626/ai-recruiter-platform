@@ -28,9 +28,7 @@ async function main() {
   console.log(printOutreachPackages(result.packages));
   console.log(`\nColleges this run: ${result.colleges.join(" | ") || "none"}`);
   console.log(`Wrote ${result.packages.length} new packages to ${result.outbox}`);
-  console.log(`Google Doc paste file: ${result.pendingDoc}`);
-  console.log(`Unsent Google Doc queue: ${result.unsentDoc}`);
-  console.log(`Google Doc: ${result.docUrl}`);
+  console.log(`Cursor drafts file: ${result.pendingDoc}`);
   console.log(`Resume attached from ${result.resumePath}`);
   if (send) {
     console.log("Send attempted for validated queued drafts. Check Sent history.");

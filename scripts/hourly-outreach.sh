@@ -1,6 +1,7 @@
 #!/bin/zsh
-set -euo pipefail
+set -uo pipefail
 cd /Users/saketamanana/applybot
+mkdir -p data/outbox
 
 bot_running() {
   pgrep -f "tsx scripts/outreach-bot.ts" >/dev/null 2>&1
@@ -12,19 +13,26 @@ wait_for_bot() {
   done
 }
 
-echo "HOUR 1 is the live crawl. Waiting for it to finish before hours 2-10."
+completed="${1:-}"
+if [ -z "$completed" ]; then
+  completed="$(cat data/outbox/hourly-run-count.txt 2>/dev/null || echo 1)"
+fi
+
+echo "Unattended outreach: last completed hour=${completed}. No Google Doc. Writing ~/.cursor/outreach-drafts.txt"
+
 wait_for_bot
 
-for n in {2..10}; do
+for n in {$((completed + 1))..10}; do
+  echo "$n" > data/outbox/hourly-run-count.txt
   start=$(date +%s)
-  echo "AGENT_LOOP_TICK_hourly_bot starting hour ${n} of 10 at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) starting hour ${n} of 10"
   if bot_running; then
-    echo "hour ${n}: crawl already running, waiting"
     wait_for_bot
   else
-    npm run bot -- --colleges=40
+    npm run bot -- --colleges=40 || echo "hour ${n} bot exited nonzero"
   fi
   node --import ./scripts/register-cli-hooks.mjs --import tsx scripts/sync-cursor-doc.ts || true
+  echo "$n" > data/outbox/hourly-run-count.txt
   elapsed=$(( $(date +%s) - start ))
   remain=$(( 3600 - elapsed ))
   echo "hour ${n} finished in ${elapsed}s"

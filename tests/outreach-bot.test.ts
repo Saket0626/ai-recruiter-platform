@@ -36,7 +36,7 @@ describe("Saket-relevant research", () => {
 });
 
 describe("outreach package", () => {
-  it("prints the Google Doc field layout for each professor", () => {
+  it("prints the outreach-drafts field layout for each professor", () => {
     const pkg = outreachPackageFromDraft({
       professorName: "Kevin Hamlen",
       college: "The University of Texas at Dallas",
@@ -86,7 +86,7 @@ describe("outreach package", () => {
   });
 });
 
-describe("Google Doc dedup and college cap", () => {
+describe("outreach-drafts dedup and college cap", () => {
   it("parses professors already written to the doc", () => {
     const seen = parseSeenFromDocText(`
 professor's email: hamlen@utdallas.edu
