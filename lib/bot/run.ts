@@ -115,7 +115,7 @@ export async function runOutreachBot(input: {
 
   if (!input.reportOnly) {
     if (!batch.colleges.length) {
-      throw new Error("Every college in the Top 100 catalog already has 15 professors in the Google Doc.");
+      throw new Error("UT Dallas already has 15 professors in the outreach ledger.");
     }
     const { runDiscovery } = await import("@/lib/research/pipeline");
     await runDiscovery({
@@ -131,7 +131,7 @@ export async function runOutreachBot(input: {
     ledger = { ...ledger, nextCollegeIndex: batch.nextCollegeIndex };
   }
 
-  const discovered = await listOutreachPackages(input.reportOnly ? undefined : batch.colleges);
+  const discovered = await listOutreachPackages(Array.from(AUTOMATION_UNIVERSITIES));
   const packages = filterNewPackages(discovered, ledger).fresh.slice(0, MAX_PACKAGES_PER_RUN);
   ledger = recordPackages(ledger, packages);
   await saveLedger(ledger);
