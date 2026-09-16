@@ -1,13 +1,12 @@
 import { COLLEGES_PER_RUN, PREFERRED_COLLEGES } from "@/lib/bot/config";
 import { collegeHasCapacity, type OutreachLedger } from "@/lib/bot/ledger";
-import { getTop100Universities } from "@/lib/universities/catalog";
+import { UNIVERSITIES, getTop100Universities } from "@/lib/universities/catalog";
 
 export function rotationColleges() {
-  const all = getTop100Universities();
-  const preferred = PREFERRED_COLLEGES.map((name) => all.find((university) => university.name === name)).filter(
+  const preferred = PREFERRED_COLLEGES.map((name) => UNIVERSITIES.find((university) => university.name === name)).filter(
     (university): university is NonNullable<typeof university> => Boolean(university),
   );
-  const rest = all.filter((university) => !PREFERRED_COLLEGES.includes(university.name));
+  const rest = getTop100Universities().filter((university) => !PREFERRED_COLLEGES.includes(university.name));
   return [...preferred, ...rest];
 }
 

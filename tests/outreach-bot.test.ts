@@ -128,4 +128,12 @@ Hello
     expect(colleges).not.toContain("University of Texas at Dallas");
     expect(colleges[0]).toBe("University of Texas at Austin");
   });
+
+  it("starts with UT Dallas even though it is outside the Top 100 list", () => {
+    const { colleges } = pickNextColleges(
+      { nextCollegeIndex: 0, seenEmails: [], seenKeys: [], perCollege: {} },
+      1,
+    );
+    expect(colleges[0]).toBe("University of Texas at Dallas");
+  });
 });
