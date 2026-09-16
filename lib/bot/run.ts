@@ -1,9 +1,18 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { prisma } from "@/lib/db/prisma";
 import { getAppSettings } from "@/lib/db/settings";
 import { loadStudentProfile, resolveResumePath } from "@/lib/resume/service";
-import { formatOutreachPackage, outreachPackageFromDraft, type OutreachPackage } from "@/lib/bot/packages";
+import {
+  formatOutreachDoc,
+  formatOutreachPackage,
+  outreachPackageFromDraft,
+  type OutreachPackage,
+} from "@/lib/bot/packages";
+import { COLLEGES_PER_RUN, MAX_PROFESSORS_PER_COLLEGE, OUTREACH_DOC_URL } from "@/lib/bot/config";
+import { filterNewPackages, loadLedger, mergeSeen, recordPackages, saveLedger } from "@/lib/bot/ledger";
+import { pickNextColleges } from "@/lib/bot/rotation";
+import { seenFromOutreachDoc } from "@/lib/bot/google-doc";
 import { logger } from "@/lib/logging/logger";
 
 const SAKET_INTERESTS = [
@@ -16,7 +25,7 @@ const SAKET_INTERESTS = [
   "data science",
 ];
 
-export async function listOutreachPackages(): Promise<OutreachPackage[]> {
+export async function listOutreachPackages(colleges?: string[]): Promise<OutreachPackage[]> {
   const resume = await loadStudentProfile();
   if (!resume.ok) throw new Error(resume.error);
   const drafts = await prisma.emailDraft.findMany({
@@ -24,8 +33,10 @@ export async function listOutreachPackages(): Promise<OutreachPackage[]> {
     include: { professor: { include: { evidence: true } } },
     orderBy: { createdAt: "desc" },
   });
+  const wanted = colleges?.length ? new Set(colleges) : null;
   const packages: OutreachPackage[] = [];
   for (const draft of drafts) {
+    if (wanted && !wanted.has(draft.professor.university)) continue;
     const pkg = outreachPackageFromDraft({
       professorName: draft.professor.fullName,
       college: draft.professor.university,
@@ -44,33 +55,67 @@ export async function listOutreachPackages(): Promise<OutreachPackage[]> {
 export async function writeOutreachOutbox(packages: OutreachPackage[]) {
   const dir = path.join(process.cwd(), "data/outbox");
   await mkdir(dir, { recursive: true });
-  const dest = path.join(dir, "outreach-packages.json");
-  await writeFile(dest, `${JSON.stringify(packages, null, 2)}\n`);
-  return dest;
+  const jsonPath = path.join(dir, "outreach-packages.json");
+  const docPath = path.join(dir, "pending-google-doc.txt");
+  const unsentPath = path.join(dir, "unsent-to-doc.txt");
+  await writeFile(jsonPath, `${JSON.stringify(packages, null, 2)}\n`);
+  await writeFile(docPath, packages.length ? `${formatOutreachDoc(packages)}\n` : "");
+  if (packages.length) {
+    let prior = "";
+    try {
+      prior = (await readFile(unsentPath, "utf8")).trim();
+    } catch {
+      prior = "";
+    }
+    const next = [prior, formatOutreachDoc(packages)].filter(Boolean).join("\n\n");
+    await writeFile(unsentPath, `${next}\n`);
+  }
+  return { jsonPath, docPath, unsentPath };
 }
 
-export async function runOutreachBot(input: { send?: boolean; reportOnly?: boolean; maxCandidates?: number }) {
+export async function runOutreachBot(input: {
+  send?: boolean;
+  reportOnly?: boolean;
+  maxCandidates?: number;
+  collegesPerRun?: number;
+}) {
   const resume = await loadStudentProfile();
   if (!resume.ok) {
     throw new Error(resume.error);
   }
 
+  let ledger = mergeSeen(await loadLedger(), await seenFromOutreachDoc());
+  const batch = pickNextColleges(ledger, input.collegesPerRun ?? COLLEGES_PER_RUN);
+
   if (!input.reportOnly) {
+    if (!batch.colleges.length) {
+      throw new Error("Every college in the Top 100 catalog already has 15 professors in the Google Doc.");
+    }
     const { runDiscovery } = await import("@/lib/research/pipeline");
     await runDiscovery({
-      preset: "top100",
+      preset: "custom",
+      universities: batch.colleges,
       department: "Computer Science",
       seedUrls: [],
       researchInterests: SAKET_INTERESTS,
-      maxCandidates: input.maxCandidates ?? 300,
-      maxCandidatesPerUniversity: 3,
+      maxCandidates: input.maxCandidates ?? batch.colleges.length * MAX_PROFESSORS_PER_COLLEGE,
+      maxCandidatesPerUniversity: MAX_PROFESSORS_PER_COLLEGE,
       minScore: 50,
     });
+    ledger = { ...ledger, nextCollegeIndex: batch.nextCollegeIndex };
   }
 
-  const packages = await listOutreachPackages();
+  const discovered = await listOutreachPackages(input.reportOnly ? undefined : batch.colleges);
+  const packages = filterNewPackages(discovered, ledger).fresh;
+  ledger = recordPackages(ledger, packages);
+  await saveLedger(ledger);
   const outbox = await writeOutreachOutbox(packages);
-  logger.info("outreach_packages_ready", { count: packages.length, outbox });
+  logger.info("outreach_packages_ready", {
+    count: packages.length,
+    colleges: batch.colleges,
+    outbox: outbox.jsonPath,
+    doc: OUTREACH_DOC_URL,
+  });
 
   if (input.send && packages.length) {
     const settings = await getAppSettings();
@@ -87,12 +132,20 @@ export async function runOutreachBot(input: { send?: boolean; reportOnly?: boole
     }
   }
 
-  return { packages, outbox, resumePath: resolveResumePath() };
+  return {
+    packages,
+    colleges: batch.colleges,
+    outbox: outbox.jsonPath,
+    pendingDoc: outbox.docPath,
+    unsentDoc: outbox.unsentPath,
+    docUrl: OUTREACH_DOC_URL,
+    resumePath: resolveResumePath(),
+  };
 }
 
 export function printOutreachPackages(packages: OutreachPackage[]) {
   if (!packages.length) {
-    return "No ready outreach packages yet. The bot only drafts when a professor has retrieved AI/CISTech research and publication evidence.";
+    return "No new unique professors this run. The bot skipped anyone already in the Google Doc and anyone without retrieved published AI/CISTech research.";
   }
   return packages.map((pkg) => formatOutreachPackage(pkg)).join("\n\n");
 }

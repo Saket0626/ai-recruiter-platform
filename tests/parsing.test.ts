@@ -69,7 +69,8 @@ describe("email extraction and normalization", () => {
     expect(people.every((person) => !/skip to main/i.test(person.fullName))).toBe(true);
     expect(looksLikePersonName("Skip To Main")).toBe(false);
     expect(looksLikePersonName("External Affairs")).toBe(false);
-    expect(looksLikePersonName("Kevin Hamlen")).toBe(true);
+    expect(looksLikePersonName("Graduate Office")).toBe(false);
+    expect(looksLikePersonName("Clay Shields Position")).toBe(false);
   });
 
   it("uses a stable identity key", () => {

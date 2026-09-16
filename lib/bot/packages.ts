@@ -12,18 +12,19 @@ export type OutreachPackage = {
 
 export function formatOutreachPackage(pkg: OutreachPackage) {
   return [
-    `===== ${pkg.professorName} =====`,
-    `College: ${pkg.college}`,
-    `Professor email: ${pkg.professorEmail}`,
-    `Research link: ${pkg.researchLink}`,
-    `Resume attached: ${pkg.resumePath}`,
+    `professor's email: ${pkg.professorEmail}`,
+    `research: ${pkg.researchLink}`,
+    `professor name: ${pkg.professorName}`,
+    `professor college: ${pkg.college}`,
+    `email draft:`,
+    `Subject: ${pkg.emailHeader}`,
     ``,
-    `Email header:`,
-    pkg.emailHeader,
-    ``,
-    `Email:`,
-    pkg.emailBody,
+    pkg.emailBody.trim(),
   ].join("\n");
+}
+
+export function formatOutreachDoc(packages: OutreachPackage[]) {
+  return packages.map((pkg) => formatOutreachPackage(pkg)).join("\n\n");
 }
 
 export function outreachPackageFromDraft(input: {

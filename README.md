@@ -8,12 +8,26 @@ Run it from the terminal:
 npm run bot
 ```
 
-Each ready professor prints as a package: professor email, research link, college, email header (subject), email body, and the resume path. Packages are also written to `data/outbox/outreach-packages.json`.
+Each new professor is printed in this layout and appended to the shared Google Doc:
+
+```
+professor's email: name@university.edu
+research: https://...
+professor name: Full Name
+professor college: University
+email draft:
+Subject: ...
+
+Hello Dr. LastName,
+...
+```
+
+The bot reads that Google Doc first so the same professor is never written twice. It crawls a fresh batch of colleges each run, with a hard cap of 15 professors per college.
 
 ```bash
-npm run bot -- --report        # print existing packages, do not crawl again
-npm run bot -- --max=40        # smaller crawl for a smoke test
-npm run bot -- --send          # live Gmail only if DRY_RUN=false
+npm run bot -- --report           # print new packages, do not crawl again
+npm run bot -- --colleges=6       # how many colleges to visit this hour
+npm run bot -- --send             # live Gmail only if DRY_RUN=false
 ```
 
 `--send` stays fail-closed. Keep `DRY_RUN=true` unless you intentionally enable live sending.

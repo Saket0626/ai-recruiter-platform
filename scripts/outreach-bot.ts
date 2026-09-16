@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { COLLEGES_PER_RUN } from "@/lib/bot/config";
 import { runOutreachBot, printOutreachPackages } from "@/lib/bot/run";
 
 function flag(name: string) {
@@ -16,10 +17,20 @@ function numberFlag(name: string, fallback: number) {
 async function main() {
   const send = flag("--send");
   const reportOnly = flag("--report");
-  const maxCandidates = numberFlag("--max", 300);
-  const result = await runOutreachBot({ send, reportOnly, maxCandidates });
+  const maxCandidates = numberFlag("--max", 0);
+  const collegesPerRun = numberFlag("--colleges", COLLEGES_PER_RUN);
+  const result = await runOutreachBot({
+    send,
+    reportOnly,
+    maxCandidates: maxCandidates || undefined,
+    collegesPerRun,
+  });
   console.log(printOutreachPackages(result.packages));
-  console.log(`\nWrote ${result.packages.length} packages to ${result.outbox}`);
+  console.log(`\nColleges this run: ${result.colleges.join(" | ") || "none"}`);
+  console.log(`Wrote ${result.packages.length} new packages to ${result.outbox}`);
+  console.log(`Google Doc paste file: ${result.pendingDoc}`);
+  console.log(`Unsent Google Doc queue: ${result.unsentDoc}`);
+  console.log(`Google Doc: ${result.docUrl}`);
   console.log(`Resume attached from ${result.resumePath}`);
   if (send) {
     console.log("Send attempted for validated queued drafts. Check Sent history.");
