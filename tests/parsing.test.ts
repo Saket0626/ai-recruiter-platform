@@ -72,6 +72,8 @@ describe("email extraction and normalization", () => {
     expect(looksLikePersonName("Graduate Office")).toBe(false);
     expect(looksLikePersonName("Clay Shields Position")).toBe(false);
     expect(looksLikePersonName("Personal Website")).toBe(false);
+    expect(looksLikePersonName("Professors Emeriti")).toBe(false);
+    expect(looksLikePersonName("Hartemink Web Page")).toBe(false);
     expect(looksLikePersonName("Tobias Höllerer")).toBe(true);
   });
 
