@@ -285,7 +285,7 @@ Uncertainty goes to the manual queue.
 5. Confirm a `DRY_RUN` row on **Sent**. No Graph `sendMail` call happens.
 6. When you are ready, set `DRY_RUN=false` in Settings or `.env.local` and send again. Gmail attaches `data/resume.pdf` as `application/pdf`.
 
-Defaults: 15 emails/day, 90-day recontact cooldown.
+Defaults: a hard maximum of 20 actual emails/day and a 90-day recontact cooldown.
 
 ## Tests
 
@@ -321,7 +321,7 @@ Tests mock Gmail/OAuth/transport by constructing MIME payloads only. They never 
 
 ## Environment variables
 
-See `.env.example` for the full list, including `DRY_RUN=true`, `AUTO_SEND=false`, `MAX_EMAILS_PER_DAY=15`, and `PROFESSOR_COOLDOWN_DAYS=90`.
+See `.env.example` for the full list, including `DRY_RUN=true`, `AUTO_SEND=false`, `MAX_EMAILS_PER_DAY=20`, and `PROFESSOR_COOLDOWN_DAYS=90`.
 
 ## Spec files from ChatGPT Astra
 
