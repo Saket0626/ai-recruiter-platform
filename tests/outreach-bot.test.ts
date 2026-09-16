@@ -58,6 +58,19 @@ describe("outreach package", () => {
     expect(text).toContain("Hello Dr. Hamlen");
   });
 
+  it("strips a View prefix from a faculty-directory name", () => {
+    const pkg = outreachPackageFromDraft({
+      professorName: "View Rina Dechter",
+      college: "University of California, Irvine",
+      professorEmail: "dechter@ics.uci.edu",
+      evidenceUrls: ["https://ics.uci.edu/?people=rina-dechter"],
+      subject: "Undergraduate Research Interest in AI Systems",
+      body: "Hello Dr. Dechter,\n\nMy name is Saket.",
+      resumePath: "data/resume.pdf",
+    });
+    expect(pkg?.professorName).toBe("Rina Dechter");
+  });
+
   it("does not build a package without a professor email", () => {
     expect(
       outreachPackageFromDraft({

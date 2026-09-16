@@ -19,6 +19,9 @@ import { isGenericInbox, normalizeEmail, normalizeUrl } from "@/lib/security/ema
 import { resolveUniversitySelections, type ResolvedUniversity } from "@/lib/universities/catalog";
 import { discoveryInputSchema, type DiscoveryInput, type StudentProfile } from "@/lib/validation/schemas";
 import { validateEmailDraft } from "@/lib/validation/email-quality";
+import { MAX_PACKAGES_PER_RUN, MAX_PROFESSORS_PER_COLLEGE } from "@/lib/bot/config";
+import { outreachPackageFromDraft } from "@/lib/bot/packages";
+import { appendPackageToCursorDoc } from "@/lib/bot/cursor-doc";
 
 function isUniqueConflict(error: unknown) {
   return typeof error === "object" && error !== null && "code" in error && (error as { code: string }).code === "P2002";
@@ -105,6 +108,7 @@ export async function executeDiscovery(runId: string) {
     department: run.department,
     researchInterests: keywords,
     maxCandidates: run.maxCandidates,
+    maxCandidatesPerUniversity: MAX_PROFESSORS_PER_COLLEGE,
     minScore: run.minScore,
   });
 
@@ -132,7 +136,7 @@ export async function executeDiscovery(runId: string) {
         currentStage: `DISCOVER:${university.shortName}`,
         progressJson: JSON.stringify(progress),
       });
-      if (progress.queued >= 50) break;
+      if (progress.queued >= MAX_PACKAGES_PER_RUN) break;
       await discoverOneUniversity({
         university,
         keywords,
@@ -531,6 +535,24 @@ async function persistAndResearch(input: {
 
     if (blocking.length === 0) {
       await prisma.professor.update({ where: { id: professor.id }, data: { status: "QUEUED" } });
+      try {
+        const pkg = outreachPackageFromDraft({
+          professorName: latest.fullName,
+          college: latest.university,
+          professorEmail: latest.email,
+          evidenceUrls: evidenceRows.map((row) => row.url),
+          facultyPageUrl: latest.facultyPageUrl,
+          subject: email.subject,
+          body: email.body,
+          resumePath: resolveResumePath(),
+        });
+        if (pkg) await appendPackageToCursorDoc(pkg);
+      } catch (error) {
+        logger.warn("cursor_doc_append_failed", {
+          professorId: professor.id,
+          error: error instanceof Error ? error.message : "unknown",
+        });
+      }
       if (failures.length === 0 && settings.AUTO_SEND && (latest.relevanceScore ?? 0) >= settings.AUTOPILOT_MIN_SCORE) {
         await sleep(jitterDelayMs());
         await sendApprovedDraft(draft.id, { autopilot: true });

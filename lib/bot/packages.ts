@@ -28,6 +28,10 @@ export function formatOutreachDoc(packages: OutreachPackage[]) {
   return packages.map((pkg) => formatOutreachPackage(pkg)).join("\n\n");
 }
 
+export function professorNameForDoc(name: string) {
+  return name.replace(/^View\s+/i, "").trim();
+}
+
 export function outreachPackageFromDraft(input: {
   professorName: string;
   college: string;
@@ -39,14 +43,15 @@ export function outreachPackageFromDraft(input: {
   resumePath: string;
 }): OutreachPackage | null {
   if (!input.professorEmail) return null;
-  if (!looksLikePersonName(input.professorName)) return null;
+  const professorName = professorNameForDoc(input.professorName);
+  if (!looksLikePersonName(professorName)) return null;
   const researchLink =
     primaryResearchLink([...input.evidenceUrls, input.facultyPageUrl ?? ""].filter(Boolean)) ??
     input.facultyPageUrl ??
     input.evidenceUrls[0];
   if (!researchLink) return null;
   return {
-    professorName: input.professorName,
+    professorName,
     college: input.college,
     professorEmail: input.professorEmail,
     researchLink,

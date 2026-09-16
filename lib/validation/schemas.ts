@@ -100,7 +100,7 @@ export const discoveryInputSchema = z.object({
   universityDomain: z.string().optional(),
   seedUrls: z.array(z.string()).default([]),
   researchInterests: z.array(z.string()).default([]),
-  maxCandidates: z.coerce.number().int().min(1).max(500).default(300),
+  maxCandidates: z.coerce.number().int().min(1).max(800).default(300),
   maxCandidatesPerUniversity: z.coerce.number().int().min(1).max(80).default(3),
   minScore: z.coerce.number().int().min(0).max(100).default(65),
 });
