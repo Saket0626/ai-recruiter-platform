@@ -39,7 +39,7 @@ function splitName(fullName: string) {
 }
 
 const NAME_STOPWORDS =
-  /\b(skip|main|content|search|searchmenu|menu|navigation|about|affairs|facts|figures|maps|accreditations|directory|department|university|people|contact|faculty|office|advising|graduate|position|staff|website|homepage|education|awards|biography|curriculum|emeriti|fellows|postdoctoral|page)\b/i;
+  /\b(skip|main|content|search|searchmenu|menu|navigation|about|affairs|facts|figures|maps|accreditations|directory|department|university|people|contact|faculty|office|advising|graduate|position|staff|website|homepage|education|awards|biography|curriculum|emeriti|fellows|postdoctoral|page|profile)\b/i;
 
 export function looksLikePersonName(value: string) {
   const trimmed = value
