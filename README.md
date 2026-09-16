@@ -1,8 +1,26 @@
 # ResearchReach
 
-ResearchReach helps a college student find professors whose public research actually matches their background, draft a personalized undergraduate research-interest email, attach a real resume PDF, and send approved messages through Gmail.
+This is Saket's personal outreach bot. It is not a multi-user product. It scours public faculty pages across UTD, UT Austin, and the rest of the Top 100 U.S. universities, finds professors in AI, software engineering, information systems, and CISTech-adjacent research, retrieves their published work, and drafts a unique Cavusoglu-style email with the resume attached.
 
-It is a Next.js app with a Postgres database on Supabase. Professor claims come only from pages the app retrieved. Student claims come only from the resume PDF and explicit profile fields. If evidence is thin, the professor is marked `INSUFFICIENT_EVIDENCE` and no email is sent.
+Run it from the terminal:
+
+```bash
+npm run bot
+```
+
+Each ready professor prints as a package: professor email, research link, college, email header (subject), email body, and the resume path. Packages are also written to `data/outbox/outreach-packages.json`.
+
+```bash
+npm run bot -- --report        # print existing packages, do not crawl again
+npm run bot -- --max=40        # smaller crawl for a smoke test
+npm run bot -- --send          # live Gmail only if DRY_RUN=false
+```
+
+`--send` stays fail-closed. Keep `DRY_RUN=true` unless you intentionally enable live sending.
+
+Professor claims come only from pages the bot retrieved. Student claims come only from `data/resume.pdf` and explicit profile fields. If a page has no published-research evidence, or the work is not AI/CISTech-relevant, the professor is marked `INSUFFICIENT_EVIDENCE` and no email is drafted.
+
+The Next.js UI is optional review/history. The bot is the primary interface.
 
 ## Shared project (Cursor + ChatGPT Astra)
 
@@ -26,7 +44,8 @@ Keep `DRY_RUN=true` and `AUTO_SEND=false` until you intentionally enable live se
 
 | Area | Location |
 | --- | --- |
-| UI | `app/`, `components/` |
+| Personal outreach bot | `scripts/outreach-bot.ts`, `lib/bot/` |
+| UI (optional review) | `app/`, `components/` |
 | Discovery / crawl / score | `lib/research/`, `lib/search/` |
 | Resume | `lib/resume/` |
 | Email generation and Gmail send | `lib/email/`, `lib/google/` |
@@ -213,11 +232,15 @@ SEARCH_API_URL=
 
 ## How to run discovery
 
-1. Open **Discover**.
-2. Confirm department, research interests, candidate caps, and minimum score (default 65).
-3. Start discovery. It always walks all Top 100 schools and reports which university is in progress.
+Primary path is the personal bot:
 
-Pipeline: discover → extract → retrieve pages → store evidence → analyze → score → filter → personalize → validate → queue.
+```bash
+npm run bot
+```
+
+It always walks all Top 100 schools (UTD, UT Austin, and the rest of the catalog), follows publication/Scholar links when they appear on a faculty page, and drafts only when the retrieved pages show published AI/CISTech-relevant research plus a real professor email.
+
+The Discover page is optional review UI. Pipeline: discover → extract → retrieve pages (including publication links) → store evidence → analyze → score → filter → personalize → validate → queue.
 
 ## Review Mode and Autopilot
 

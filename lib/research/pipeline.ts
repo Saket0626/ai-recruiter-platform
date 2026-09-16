@@ -6,11 +6,11 @@ import { logger } from "@/lib/logging/logger";
 import { analyzeProfessorResearch } from "@/lib/research/analyzer";
 import { FallbackResearchProvider } from "@/lib/research/crawler";
 import { extractProfileDetails, looksLikePersonName, sourcePriority } from "@/lib/research/parser";
-import { topicSupportedByEvidence, hasAiResearch, aiTopicLabels } from "@/lib/research/keywords";
+import { topicSupportedByEvidence, saketTopicLabels, isSaketRelevantResearch } from "@/lib/research/keywords";
+import { hasPublishedResearch, publicationLinks } from "@/lib/research/publications";
 import { scoreProfessorRelevance } from "@/lib/research/scorer";
 import { CompositeSearchProvider } from "@/lib/search/composite";
 import { generateGroundedEmail } from "@/lib/email/generator";
-import { createEmailProvider } from "@/lib/email/create-provider";
 import { dailyCapReached, isInCooldown, jitterDelayMs, sentCountToday } from "@/lib/email/rate-limit";
 import { assertDraftSendable, professorStatusAfterSend } from "@/lib/email/send-gate";
 import { hashResumePdf } from "@/lib/resume/hash";
@@ -223,7 +223,7 @@ async function discoverOneUniversity(input: {
     peopleQueue.push({ ...person, snippet: person.snippet || hit.snippet });
   }
 
-  peopleQueue.sort((a, b) => Number(hasAiResearch(b.snippet)) - Number(hasAiResearch(a.snippet)));
+  peopleQueue.sort((a, b) => Number(isSaketRelevantResearch(b.snippet)) - Number(isSaketRelevantResearch(a.snippet)));
 
   let scanned = 0;
   let aiQueued = 0;
@@ -332,6 +332,25 @@ async function persistAndResearch(input: {
     return { researched: false, qualified: false, queued: false };
   }
 
+  const extraUrls: string[] = [];
+  for (const page of pages) {
+    const details = extractProfileDetails(page.html, page.url, input.domain);
+    extraUrls.push(...publicationLinks(details.links, page.url));
+  }
+  const seenUrls = new Set(pages.map((page) => page.url));
+  const follow = extraUrls.filter((url) => !seenUrls.has(url)).slice(0, 2);
+  if (follow.length) {
+    try {
+      const extraPages = await input.research.retrieve(follow);
+      pages.push(...extraPages);
+    } catch (error) {
+      logger.warn("publication_follow_failed", {
+        professorId: professor.id,
+        error: error instanceof Error ? error.message : "unknown",
+      });
+    }
+  }
+
   const evidenceRows: Array<{
     professorId: string;
     url: string;
@@ -361,7 +380,7 @@ async function persistAndResearch(input: {
       url: page.url,
       title: page.title,
       extractedText: details.text.slice(0, 20000),
-      claim: "Retrieved public academic page",
+      claim: hasPublishedResearch(details.text) ? "Retrieved public research or publication page" : "Retrieved public academic page",
       sourcePriority: sourcePriority(page.url, input.domain),
     });
   }
@@ -379,11 +398,15 @@ async function persistAndResearch(input: {
     student: input.student,
   });
   const evidenceText = evidenceRows.map((row) => row.extractedText).join("\n");
-  const aiTopics = aiTopicLabels(`${combinedText}\n${evidenceText}`);
-  const isAi = aiTopics.length > 0 || hasAiResearch(combinedText);
+  const relevant = isSaketRelevantResearch(`${combinedText}\n${evidenceText}`);
+  const published = hasPublishedResearch(`${combinedText}\n${evidenceText}`, [
+    ...evidenceRows.map((row) => row.url),
+    ...pages.map((page) => page.url),
+  ]);
+  const relevantTopics = saketTopicLabels(`${combinedText}\n${evidenceText}`);
   const topics = [
     ...analysis.research_topics.filter((topic) => topicSupportedByEvidence(topic, evidenceText)),
-    ...aiTopics,
+    ...relevantTopics,
   ].filter((topic, index, all) => all.indexOf(topic) === index);
   const scored = scoreProfessorRelevance({
     pageText: combinedText,
@@ -392,8 +415,9 @@ async function persistAndResearch(input: {
   });
   const latestEmail = (await prisma.professor.findUnique({ where: { id: professor.id }, select: { email: true } }))?.email;
   const genericInbox = latestEmail ? isGenericInbox(latestEmail) : false;
-  const insufficient = !isAi || !latestEmail || genericInbox || evidenceRows.length === 0 || topics.length === 0;
-  const status = insufficient ? "INSUFFICIENT_EVIDENCE" : isAi ? "QUALIFIED" : scored.score >= input.minScore ? "QUALIFIED" : "RESEARCHED";
+  const insufficient =
+    !relevant || !published || !latestEmail || genericInbox || evidenceRows.length === 0 || topics.length === 0;
+  const status = insufficient ? "INSUFFICIENT_EVIDENCE" : "QUALIFIED";
 
   await prisma.professor.update({
     where: { id: professor.id },
@@ -409,10 +433,16 @@ async function persistAndResearch(input: {
       status,
     },
   });
-  logger.info("research_completed", { professorId: professor.id, status, score: scored.score, ai: isAi });
+  logger.info("research_completed", {
+    professorId: professor.id,
+    status,
+    score: scored.score,
+    relevant,
+    published,
+  });
 
-  if (!isAi || insufficient) {
-    logger.info("qualification_result", { professorId: professor.id, qualified: false, reason: isAi ? status : "not_ai" });
+  if (insufficient) {
+    logger.info("qualification_result", { professorId: professor.id, qualified: false, reason: status });
     return { researched: true, qualified: false, queued: false };
   }
 
@@ -431,7 +461,7 @@ async function persistAndResearch(input: {
     const email = generateGroundedEmail({
       professorLastName: professor.lastName,
       professorFullName: professor.fullName,
-      topics: topics.length ? topics : aiTopics,
+      topics: topics.length ? topics : relevantTopics,
       researchSummary: analysis.research_summary,
       student: input.student,
       evidenceTexts: evidenceRows.map((row) => row.extractedText),
@@ -444,7 +474,7 @@ async function persistAndResearch(input: {
       professorEmail: latest.email,
       subject: email.subject,
       body: email.body,
-      topics: topics.length ? topics : aiTopics,
+      topics: topics.length ? topics : relevantTopics,
       evidenceTexts: evidenceRows.map((row) => row.extractedText),
       evidenceUrls: evidenceRows.map((row) => row.url),
       student: input.student,
@@ -611,6 +641,7 @@ export async function sendApprovedDraft(draftId: string, options?: { autopilot?:
     throw error;
   }
 
+  const { createEmailProvider } = await import("@/lib/email/create-provider");
   const provider = createEmailProvider();
   let result;
   try {

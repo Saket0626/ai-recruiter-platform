@@ -15,6 +15,7 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "resume:generate": "tsx scripts/generate-resume.ts",
+    "bot": "node --import ./scripts/register-cli-hooks.mjs --import tsx scripts/outreach-bot.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

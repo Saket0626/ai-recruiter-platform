@@ -183,6 +183,18 @@ export function aiTopicLabels(text: string) {
   return uniqueLabels(findKeywordMatches(text).filter((match) => match.family === "ai"));
 }
 
+const SAKET_FAMILY_IDS = new Set(["ai", "ml", "llm", "nlp", "cv", "agents", "dl", "ds", "se", "is", "pa", "hci", "db"]);
+
+export function saketTopicLabels(text: string) {
+  return uniqueLabels(
+    findKeywordMatches(text).filter((match) => match.family === "ai" || SAKET_FAMILY_IDS.has(match.id)),
+  );
+}
+
+export function isSaketRelevantResearch(text: string) {
+  return saketTopicLabels(text).length > 0;
+}
+
 export function topicSupportedByEvidence(topic: string, evidence: string) {
   const haystack = normalizeText(evidence);
   const needle = topic.toLowerCase().trim();

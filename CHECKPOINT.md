@@ -28,7 +28,7 @@ The real resume belongs only on the local machine and a Railway volume/mount (`R
 
 | Requirement | Evidence |
 | --- | --- |
-| Seeded discovery, evidence storage, scoring, grounded drafts, Review Mode UI | `lib/research`, `app/`, `components/` |
+| Personal CLI outreach bot (`npm run bot`) with package output | `scripts/outreach-bot.ts`, `lib/bot/` |
 | Resume parsing and quality gates | `lib/resume`, `tests/resume-scoring.test.ts` |
 | Approval required before manual send; edits/regenerate revoke approval and resume hash | `lib/email/send-gate.ts`, `app/api/queue/[id]/route.ts`, `tests/send-gate.test.ts`, `tests/resume-hash.test.ts` |
 | Fail-closed `DRY_RUN` / `AUTO_SEND` parsing | `lib/config/env.ts`, `lib/db/settings.ts`, `tests/dry-run-config.test.ts` |

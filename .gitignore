@@ -50,3 +50,4 @@ next-env.d.ts
 /data/token-cache.enc
 /data/*.pdf
 !/data/fixtures/*.pdf
+/data/outbox/
