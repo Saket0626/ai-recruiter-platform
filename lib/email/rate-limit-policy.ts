@@ -1,4 +1,12 @@
 export const SEND_DAY_TIMEZONE = "America/Chicago";
+export const HARD_MAX_EMAILS_PER_DAY = 20;
+
+export function boundedDailyLimit(value: string | number, fallback = HARD_MAX_EMAILS_PER_DAY) {
+  const parsed = Number(value);
+  const safeFallback = Math.min(HARD_MAX_EMAILS_PER_DAY, Math.max(1, Math.floor(fallback)));
+  if (!Number.isFinite(parsed) || parsed < 1) return safeFallback;
+  return Math.min(HARD_MAX_EMAILS_PER_DAY, Math.floor(parsed));
+}
 
 export function startOfSendDay(now = new Date(), timeZone = SEND_DAY_TIMEZONE) {
   const dateKey = new Intl.DateTimeFormat("en-CA", {

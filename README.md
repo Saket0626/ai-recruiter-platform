@@ -1,6 +1,6 @@
 # ResearchReach
 
-This is Saket's personal outreach bot. It is not a multi-user product. It scours public faculty pages across UTD, UT Austin, and the rest of the Top 100 U.S. universities, finds professors in AI, software engineering, information systems, and CISTech-adjacent research, retrieves their published work, and drafts a unique Cavusoglu-style email with the resume attached.
+This is Saket's personal outreach bot. It is not a multi-user product. The unattended bot is restricted to UT Dallas faculty, finds professors in AI, software engineering, information systems, and CISTech-adjacent research, retrieves their published work, and drafts a unique Cavusoglu-style email with the resume attached.
 
 Run it from the terminal:
 
@@ -22,15 +22,15 @@ Hello Dr. LastName,
 ...
 ```
 
-The bot reads that Google Doc first so the same professor is never written twice. Each hourly run visits 40 colleges at or above Arizona State University, with a hard cap of 15 professors per college and at most 50 drafts.
+The bot reads that Google Doc first so the same professor is never written twice. Each unattended run visits UT Dallas only, with a hard cap of 15 professors and at most 20 draft packages.
 
 ```bash
-npm run bot -- --report           # print new packages, do not crawl again
-npm run bot -- --colleges=40      # default batch size
-npm run bot -- --send             # live Gmail only if DRY_RUN=false
+npm run bot -- --report                  # print new packages, do not crawl again
+npm run bot -- --colleges=1              # unattended scope remains UT Dallas only
+npm run bot -- --report --send           # approved UT Dallas drafts only, score >= 80
 ```
 
-`--send` stays fail-closed. Keep `DRY_RUN=true` unless you intentionally enable live sending.
+`--send` stays fail-closed. It requires `--report`, approved drafts, UT Dallas, relevance score 80 or higher, and the exact authorized resume hash. Keep `DRY_RUN=true` unless the reviewed launch conditions are satisfied.
 
 Professor claims come only from pages the bot retrieved. Student claims come only from `data/resume.pdf` and explicit profile fields. If a page has no published-research evidence, or the work is not AI/CISTech-relevant, the professor is marked `INSUFFICIENT_EVIDENCE` and no email is drafted.
 
@@ -46,7 +46,7 @@ Keep `DRY_RUN=true` and `AUTO_SEND=false` until you intentionally enable live se
 
 ## What it does
 
-1. Discovery searches all Top 100 U.S. universities automatically. You do not pick schools.
+1. The unattended bot searches UT Dallas only. Broader discovery is outside the authorized production launch scope.
 2. The app crawls public faculty directory URLs for that school and, if you configured a search API key, runs `site:that-university-domain` queries.
 3. It stores source URLs and extracted text for every research claim.
 4. It scores relevance against Saket's resume and the configured research families (AI, software engineering, security, information systems, and related areas).
@@ -163,6 +163,8 @@ Put your real PDF there. `npm run resume:generate` writes `data/fixtures/starter
 The parser, not this README, is the source of truth for experience wording. It will not turn "helped" into "built".
 
 ## University catalog
+
+The catalog supports broader review-time discovery, but unattended production outreach remains restricted to UT Dallas.
 
 Research is not limited to UT Dallas. `data/universities.json` includes 100+ U.S. universities. Every Discover run searches the **Top 100 U.S. universities** catalog (2026 U.S. News-style national universities). You do not choose a subset.
 
@@ -283,7 +285,7 @@ Uncertainty goes to the manual queue.
 5. Confirm a `DRY_RUN` row on **Sent**. No Graph `sendMail` call happens.
 6. When you are ready, set `DRY_RUN=false` in Settings or `.env.local` and send again. Gmail attaches `data/resume.pdf` as `application/pdf`.
 
-Defaults: 15 emails/day, 90-day recontact cooldown.
+Defaults: a hard maximum of 20 actual emails/day and a 90-day recontact cooldown.
 
 ## Tests
 
@@ -319,7 +321,7 @@ Tests mock Gmail/OAuth/transport by constructing MIME payloads only. They never 
 
 ## Environment variables
 
-See `.env.example` for the full list, including `DRY_RUN=true`, `AUTO_SEND=false`, `MAX_EMAILS_PER_DAY=15`, and `PROFESSOR_COOLDOWN_DAYS=90`.
+See `.env.example` for the full list, including `DRY_RUN=true`, `AUTO_SEND=false`, `MAX_EMAILS_PER_DAY=20`, and `PROFESSOR_COOLDOWN_DAYS=90`.
 
 ## Spec files from ChatGPT Astra
 

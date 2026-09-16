@@ -6,12 +6,13 @@ export const OUTREACH_DOC_EXPORT_URL = `https://docs.google.com/document/d/${OUT
 export const ALWAYS_PASTE_TO_DOC = true;
 
 export const MAX_PROFESSORS_PER_COLLEGE = 15;
-export const COLLEGES_PER_RUN = 40;
-export const MAX_PACKAGES_PER_RUN = 50;
-export const TARGET_PACKAGES_PER_RUN = 25;
-export const ASU_WORST_RANK = 87;
+export const COLLEGES_PER_RUN = 1;
+export const MAX_PACKAGES_PER_RUN = 20;
+export const TARGET_PACKAGES_PER_RUN = 20;
+export const MIN_AUTOMATION_RELEVANCE_SCORE = 80;
+export const REQUIRED_RESUME_SHA256 =
+  "8c587acd1bc183b49c8702f23f63c7bb4dcb0a612960e8a12162be8cd2bb0adb";
 
-export const PREFERRED_COLLEGES = [
+export const AUTOMATION_UNIVERSITIES = [
   "University of Texas at Dallas",
-  "University of Texas at Austin",
-];
+] as const;

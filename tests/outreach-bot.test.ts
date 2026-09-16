@@ -115,7 +115,7 @@ Hello
     expect(filterNewPackages([existing[0]!, extra], ledger).fresh).toEqual([]);
   });
 
-  it("rotates to colleges that still have room", () => {
+  it("stops the unattended rotation when UT Dallas reaches its cap", () => {
     const { colleges } = pickNextColleges(
       {
         nextCollegeIndex: 0,
@@ -125,8 +125,7 @@ Hello
       },
       2,
     );
-    expect(colleges).not.toContain("University of Texas at Dallas");
-    expect(colleges[0]).toBe("University of Texas at Austin");
+    expect(colleges).toEqual([]);
   });
 
   it("starts with UT Dallas even though it is outside the Top 100 list", () => {
@@ -137,10 +136,8 @@ Hello
     expect(colleges[0]).toBe("University of Texas at Dallas");
   });
 
-  it("keeps Arizona State as the worst allowed college", () => {
+  it("keeps unattended outreach limited to UT Dallas", () => {
     const names = rotationColleges().map((university) => university.name);
-    expect(names).toContain("Arizona State University");
-    expect(names).toContain("University of Texas at Austin");
-    expect(names).not.toContain("University of Iowa");
+    expect(names).toEqual(["University of Texas at Dallas"]);
   });
 });

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { DEFAULT_AVAILABILITY_SENTENCE } from "@/lib/config/defaults";
 import { parseStudentIdentityOverrides } from "@/lib/resume/profile-overrides";
+import { boundedDailyLimit } from "@/lib/email/rate-limit-policy";
 
 export async function getSetting(key: string, fallback: string) {
   const row = await prisma.appSetting.findUnique({ where: { key } });
@@ -30,7 +31,7 @@ export async function getAppSettings() {
     AUTO_SEND: autoSend === "true",
     // Only the canonical explicit opt-out may disable dry run.
     DRY_RUN: dryRun !== "false",
-    MAX_EMAILS_PER_DAY: Number(maxPerDay),
+    MAX_EMAILS_PER_DAY: boundedDailyLimit(maxPerDay),
     PROFESSOR_COOLDOWN_DAYS: Number(cooldown),
     MIN_RELEVANCE_SCORE: Number(minScore),
     AUTOPILOT_MIN_SCORE: Number(autopilotMin),

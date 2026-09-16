@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { cooldownActiveFrom, dailyCapReachedFromCount, jitterDelayMs, startOfSendDay } from "@/lib/email/rate-limit-policy";
+import {
+  boundedDailyLimit,
+  cooldownActiveFrom,
+  dailyCapReachedFromCount,
+  jitterDelayMs,
+  startOfSendDay,
+} from "@/lib/email/rate-limit-policy";
 
 describe("production rate limits and cooldown", () => {
   it("enforces a 90 day cooldown using the production helper", () => {
@@ -11,9 +17,16 @@ describe("production rate limits and cooldown", () => {
     expect(cooldownActiveFrom(old, 90)).toBe(false);
   });
 
-  it("enforces a daily cap of 15 using the production helper", () => {
-    expect(dailyCapReachedFromCount(15, 15)).toBe(true);
-    expect(dailyCapReachedFromCount(14, 15)).toBe(false);
+  it("enforces a daily cap of 20 using the production helper", () => {
+    expect(dailyCapReachedFromCount(20, 20)).toBe(true);
+    expect(dailyCapReachedFromCount(19, 20)).toBe(false);
+  });
+
+  it("never accepts a configured daily limit above 20", () => {
+    expect(boundedDailyLimit(100)).toBe(20);
+    expect(boundedDailyLimit("21")).toBe(20);
+    expect(boundedDailyLimit("not-a-number")).toBe(20);
+    expect(boundedDailyLimit(8)).toBe(8);
   });
 
   it("returns a positive jitter delay from the production helper", () => {
