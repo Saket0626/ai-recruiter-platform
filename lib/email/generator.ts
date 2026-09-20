@@ -1,3 +1,4 @@
+import { studentSignature, STUDENT_OUTREACH } from "@/lib/bot/identity";
 import { familyForTopics } from "@/lib/research/scorer";
 import { interpretProfessorResearch } from "@/lib/research/interpret";
 import { matchResumeToResearch, type ResumeMatch } from "@/lib/email/resume-match";
@@ -89,20 +90,18 @@ export function generateGroundedEmail(input: {
   const specific = research.specificProblem || topics[0] || "this research";
   const broad = research.broadArea || topics[0] || "this research";
   const match = matchResumeToResearch({ student: input.student, research, topics });
-  const studentName = input.student.name.split(" ")[0] || "Saket";
   const availability = (input.availabilitySentence ?? DEFAULT_AVAILABILITY_SENTENCE).replace(/[.]+$/, "");
   const body = sanitizeGeneratedText(
     [
       `Dear ${honorific(input.professorLastName, input.professorFullName)},`,
       ``,
-      `My name is ${studentName}, and I am a ${input.student.currentStatus.toLowerCase()} at UT Dallas interested in pursuing ${degreeFocus(input.student)}. I am very interested in your research on ${broad}, particularly ${specific}. I would love to learn more about your lab's work and see if I could assist with your research.`,
+      `My name is ${STUDENT_OUTREACH.firstName}, and I am a ${input.student.currentStatus.toLowerCase()} at ${STUDENT_OUTREACH.university} interested in pursuing ${degreeFocus(input.student)}. I am very interested in your research on ${broad}, particularly ${specific}. I would love to learn more about your lab's work and see if I could assist as an undergraduate researcher.`,
       ``,
       experienceParagraph(match),
       ``,
-      `${connectionParagraph(match, specific, broad)} I have attached my resume for your review. ${availability}. I can contribute a few hours each week and I am hoping to learn how your group approaches this work in practice. Thank you for your time and consideration.`,
+      `${connectionParagraph(match, specific, broad)} If you have an undergraduate research opening, I would welcome a brief conversation. I have attached my resume for your review. ${availability}. I can contribute a few hours each week and I am hoping to learn how your group approaches this work in practice. Thank you for your time and consideration.`,
       ``,
-      `Sincerely,`,
-      studentName,
+      studentSignature(),
     ].join("\n"),
   );
 

@@ -55,7 +55,9 @@ describe("email generation and quality gates", () => {
     expect(ai.body).toMatch(/Dear Dr\. Ng,/);
     expect(ai.body).toMatch(/attached my resume for your review/i);
     expect(ai.body).toMatch(/continue through the spring and beyond/i);
-    expect(ai.body).toMatch(/Sincerely,\nSaket/);
+    expect(ai.body).toMatch(/Sincerely,\nSaket Amanana/);
+    expect(ai.body).toMatch(/saket\.amanana@gmail\.com/);
+    expect(ai.body).toMatch(/University of Texas at Dallas, First-Year Student/);
     expect(ai.body).not.toMatch(/[\u2014\u2013;]/);
   });
 
@@ -104,7 +106,7 @@ describe("email generation and quality gates", () => {
     });
     expect(cavusogluFailures.map((item) => item.code)).toEqual([]);
     expect(wordCount(cavusoglu.body)).toBeGreaterThanOrEqual(170);
-    expect(wordCount(cavusoglu.body)).toBeLessThanOrEqual(270);
+    expect(wordCount(cavusoglu.body)).toBeLessThanOrEqual(290);
     expect(
       extractGroundedResearchDetail({
         topics: ["information systems", "information security and privacy"],

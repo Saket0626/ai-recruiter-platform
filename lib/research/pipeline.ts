@@ -24,6 +24,7 @@ import { validateEmailDraft } from "@/lib/validation/email-quality";
 import { MAX_PACKAGES_PER_RUN, MAX_PROFESSORS_PER_COLLEGE } from "@/lib/bot/config";
 import { outreachPackageFromDraft } from "@/lib/bot/packages";
 import { appendPackageToCursorDoc } from "@/lib/bot/cursor-doc";
+import { postProfessorToN8n, webhookDelay } from "@/lib/bot/n8n";
 
 function isUniqueConflict(error: unknown) {
   return typeof error === "object" && error !== null && "code" in error && (error as { code: string }).code === "P2002";
@@ -575,7 +576,20 @@ async function persistAndResearch(input: {
           body: email.body,
           resumePath: resolveResumePath(),
         });
-        if (pkg) await appendPackageToCursorDoc(pkg);
+        if (pkg) {
+          await appendPackageToCursorDoc(pkg);
+          if (failures.length === 0) {
+            try {
+              const posted = await postProfessorToN8n(pkg);
+              if (!posted.skipped) await webhookDelay();
+            } catch (error) {
+              logger.warn("n8n_webhook_failed", {
+                professorId: professor.id,
+                error: error instanceof Error ? error.message : "unknown",
+              });
+            }
+          }
+        }
       } catch (error) {
         logger.warn("cursor_doc_append_failed", {
           professorId: professor.id,

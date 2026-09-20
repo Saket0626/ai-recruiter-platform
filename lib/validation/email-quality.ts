@@ -102,8 +102,8 @@ export function validateEmailDraft(input: {
   }
   failures.push(...styleFailures(`${input.subject}\n${input.body}`));
   const words = wordCount(input.body);
-  if (words < 170 || words > 270) {
-    failures.push({ code: "length", message: `Email word count ${words} is outside 170-270.` });
+  if (words < 170 || words > 290) {
+    failures.push({ code: "length", message: `Email word count ${words} is outside 170-290.` });
   }
   if (/urgent|research opportunity!!!|amazing research|job request/i.test(input.subject)) {
     failures.push({ code: "bad_subject", message: "Subject line uses a banned style." });
