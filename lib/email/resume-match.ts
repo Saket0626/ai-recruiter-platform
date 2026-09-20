@@ -29,10 +29,12 @@ function named(profile: StudentProfile, name: string) {
 function firstFact(work: NamedWork | undefined) {
   if (!work) return "worked on undergraduate software projects";
   const summary = work.summary.replace(/\s+/g, " ").trim().replace(/^I\s+/i, "").replace(/[.]+$/, "");
-  if (summary && summary.toLowerCase() !== work.name.toLowerCase() && !/^(experience|projects|education|skills)\b/i.test(summary)) {
-    return summary;
+  if (!summary || summary.toLowerCase() === work.name.toLowerCase() || /^(experience|projects|education|skills)\b/i.test(summary)) {
+    return `helped with ${work.name}`;
   }
-  return `helped with ${work.name}`;
+  const first = summary.match(/^.+?[.](?=\s|$)/)?.[0] || summary;
+  const words = first.replace(/[.]+$/, "").split(/\s+/).filter(Boolean);
+  return (words.length > 28 ? `${words.slice(0, 28).join(" ")}` : words.join(" ")).replace(/[,:]+$/g, "");
 }
 
 function topicBlob(research: VerifiedResearch, topics: string[]) {
@@ -57,19 +59,22 @@ export function matchResumeToResearch(input: {
     ) &&
     !/\b(software|security|vulnerab|privacy|program analysis|binary rewriting)\b/i.test(blob);
 
-  if (/\b(security|privacy|cyber|vulnerab|program analysis|binary rewriting|access control)\b/i.test(blob) && clinical) {
+  if (/\b(vulnerab|program analysis|binary rewriting|access control|software security)\b/i.test(blob) && clinical) {
     return {
       experienceName: "ClinicalHours",
       verifiedFact: firstFact(clinical),
       conceptualBridge:
         "Working on a real application made me curious about how weaknesses in software that handles users can be identified before they become problems.",
-      whyNatural: "Undergraduate software development is a defensible entry to software security and privacy research.",
+      whyNatural: "Undergraduate software development is a defensible entry to software security research.",
       confidence: "high",
       honestCuriosity: false,
     };
   }
 
-  if (/\b(database|data mining|data management|information systems|analytics|pipeline)\b/i.test(blob) && (chartwise || clinical)) {
+  if (
+    /\b(database|data mining|data management|geo-replicated|information systems|analytics|pipeline)\b/i.test(blob) &&
+    (chartwise || clinical)
+  ) {
     const work = chartwise ?? clinical!;
     return {
       experienceName: work.name,
@@ -77,6 +82,18 @@ export function matchResumeToResearch(input: {
       conceptualBridge:
         "Working with real data in a software project made me curious about how researchers organize, query, and extract insight from large information collections.",
       whyNatural: "Resume data or product work is a reasonable bridge to data systems research.",
+      confidence: "medium",
+      honestCuriosity: false,
+    };
+  }
+
+  if (/\b(security|privacy|cyber)\b/i.test(blob) && clinical) {
+    return {
+      experienceName: "ClinicalHours",
+      verifiedFact: firstFact(clinical),
+      conceptualBridge:
+        "Working on software that handles user information made me curious about how that information is protected as systems get larger.",
+      whyNatural: "Product software with user information is a modest bridge to privacy research.",
       confidence: "medium",
       honestCuriosity: false,
     };

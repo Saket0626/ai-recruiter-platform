@@ -108,15 +108,17 @@ export function generateGroundedEmail(input: {
 
   const family = familyForTopics(topics);
   const subject =
-    family === "ai"
-      ? "Undergraduate Research Interest in AI Systems"
-      : /security/.test(broad)
-        ? "Undergraduate Research Interest in Software Security"
-        : /information systems/.test(broad)
-          ? "Interest in Undergraduate Research in Information Systems"
-          : /program analysis/.test(broad)
-            ? "Research Interest in Program Analysis"
-            : `UT Dallas Student Interested in Your ${topics[0] || "Research"} Research`;
+    /database|distributed|data management/.test(`${broad} ${specific}`)
+      ? "UT Dallas Student Interested in Your Data Systems Research"
+      : family === "ai"
+        ? "Undergraduate Research Interest in AI Systems"
+        : /security/.test(broad)
+          ? "Undergraduate Research Interest in Software Security"
+          : /information systems/.test(broad)
+            ? "Interest in Undergraduate Research in Information Systems"
+            : /program analysis/.test(broad)
+              ? "Research Interest in Program Analysis"
+              : `UT Dallas Student Interested in Your ${broad || "Research"} Research`;
 
   return generatedEmailSchema.parse({
     subject: sanitizeGeneratedText(subject),

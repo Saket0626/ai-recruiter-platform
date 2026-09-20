@@ -46,6 +46,8 @@ export function toLabWorkPhrase(raw: string) {
     .replace(/^(research(ing)?|work)\s+on\s+/i, "")
     .replace(/^current (research )?includes?:\s+/i, "")
     .replace(/^current interests are in the area of\s+/i, "")
+    .replace(/^current research activities are focused in developing new approaches for\s+/i, "")
+    .replace(/^(professor \w+[’']s )?research focus is on:?\s+/i, "")
     .replace(/^at the same time,?\s+(as\s+)?/i, "")
     .replace(/^[\p{L}.'’-]+(?:\s+[\p{L}.'’-]+)?\s*'s research (addresses|interests lie in|focuses primarily on)\s+/iu, "")
     .replace(/[.!?]+$/g, "")
@@ -59,7 +61,11 @@ export function toLabWorkPhrase(raw: string) {
   }
   if (words.length > 18) phrase = words.slice(0, 18).join(" ");
   else phrase = words.join(" ");
-  return phrase.replace(/[,:]+$/g, "").trim();
+  const trimmed = phrase.split(/\s+/).filter(Boolean);
+  while (trimmed.length && /^(the|of|in|and|at|for|to|a|an|on|with)$/i.test(trimmed.at(-1) ?? "")) {
+    trimmed.pop();
+  }
+  return trimmed.join(" ").replace(/[,:]+$/g, "").trim();
 }
 
 function topicNeedles(topics: string[]) {
@@ -96,7 +102,10 @@ export function interpretProfessorResearch(input: {
   researchSummary?: string;
 }): VerifiedResearch {
   const topics = input.topics.filter(Boolean);
-  const broadArea = topics[0] || "this research area";
+  const broadArea =
+    topics.find((topic) => /database|distributed|privacy|security|information systems/i.test(topic)) ||
+    topics[0] ||
+    "this research area";
   const evidence = (input.evidenceTexts ?? []).map(normalize).filter(Boolean);
   const combined = evidence.join(" ");
   const rejectionReasons: string[] = [];
