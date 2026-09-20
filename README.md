@@ -18,7 +18,7 @@ professor college: University
 email draft:
 Subject: ...
 
-Hello Dr. LastName,
+Dear Dr. LastName,
 ...
 ```
 

@@ -11,6 +11,8 @@ import { hasPublishedResearch, publicationLinks } from "@/lib/research/publicati
 import { scoreProfessorRelevance } from "@/lib/research/scorer";
 import { CompositeSearchProvider } from "@/lib/search/composite";
 import { generateGroundedEmail } from "@/lib/email/generator";
+import { interpretProfessorResearch } from "@/lib/research/interpret";
+import { containsPageGarbage } from "@/lib/research/page-classify";
 import { dailyCapReached, isInCooldown, jitterDelayMs, sentCountToday } from "@/lib/email/rate-limit";
 import { assertDraftSendable, professorStatusAfterSend } from "@/lib/email/send-gate";
 import { hashResumePdf } from "@/lib/resume/hash";
@@ -420,8 +422,19 @@ async function persistAndResearch(input: {
   });
   const latestEmail = (await prisma.professor.findUnique({ where: { id: professor.id }, select: { email: true } }))?.email;
   const genericInbox = latestEmail ? isGenericInbox(latestEmail) : false;
+  const verifiedResearch = interpretProfessorResearch({
+    topics,
+    evidenceTexts: evidenceRows.map((row) => row.extractedText),
+    researchSummary: analysis.research_summary,
+  });
   const insufficient =
-    !relevant || !published || !latestEmail || genericInbox || evidenceRows.length === 0 || topics.length === 0;
+    !relevant ||
+    !published ||
+    !latestEmail ||
+    genericInbox ||
+    evidenceRows.length === 0 ||
+    topics.length === 0 ||
+    !verifiedResearch.generationAllowed;
   const status = insufficient ? "INSUFFICIENT_EVIDENCE" : "QUALIFIED";
 
   await prisma.professor.update({
@@ -454,10 +467,20 @@ async function persistAndResearch(input: {
   const existingDraft = await prisma.emailDraft.findFirst({
     where: { professorId: professor.id, status: { in: ["QUEUED", "APPROVED"] } },
   });
-  if (existingDraft) {
+  if (existingDraft && !containsPageGarbage(existingDraft.body)) {
     logger.info("draft_generated", { draftId: existingDraft.id, professorId: professor.id, reused: true });
     await prisma.professor.update({ where: { id: professor.id }, data: { status: "QUEUED" } });
     return { researched: true, qualified: true, queued: true };
+  }
+  if (existingDraft) {
+    await prisma.emailDraft.update({
+      where: { id: existingDraft.id },
+      data: {
+        status: "VALIDATION_FAILED",
+        failureReason: "Draft used webpage chrome instead of verified research.",
+        validationPassed: false,
+      },
+    });
   }
 
   logger.info("qualification_result", { professorId: professor.id, qualified: true });
@@ -500,6 +523,12 @@ async function persistAndResearch(input: {
       "unsupported_student_claim",
       "placeholder",
       "duplicate_recipient",
+      "page_garbage",
+      "research_not_verified",
+      "research_detail_missing",
+      "clinicalhours_ownership",
+      "fake_connection",
+      "unsupported_professor_claim",
     ]);
     const blocking = failures.filter((item) => blockingCodes.has(item.code));
     const draft = await prisma.emailDraft.create({

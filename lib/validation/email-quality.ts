@@ -2,6 +2,7 @@ import { isGenericInbox, isValidEmailShape, normalizeEmail } from "@/lib/securit
 import { isResumeSupportedClaim } from "@/lib/resume/claims";
 import { wordCount } from "@/lib/email/generator";
 import { draftUsesResearchDetail, extractGroundedResearchDetail } from "@/lib/email/research-detail";
+import { containsPageGarbage } from "@/lib/research/page-classify";
 import { topicSupportedByEvidence } from "@/lib/research/keywords";
 import { styleFailures } from "@/lib/email/style";
 import { DEFAULT_AVAILABILITY_SENTENCE } from "@/lib/config/defaults";
@@ -138,6 +139,28 @@ export function validateEmailDraft(input: {
     }
   }
 
+  if (/\bi\s+(built|created|launched|founded|developed)\s+clinicalhours\b/i.test(input.body)) {
+    failures.push({
+      code: "clinicalhours_ownership",
+      message: "Email claims Saket built, created, launched, founded, or developed ClinicalHours.",
+    });
+  }
+
+  if (containsPageGarbage(input.body)) {
+    failures.push({
+      code: "page_garbage",
+      message: "Email includes webpage chrome such as a schedule, room, heading, or navigation text.",
+    });
+  }
+
+  const curious = input.body.match(/made me curious about ([^.]+)/i);
+  if (curious && containsPageGarbage(curious[1])) {
+    failures.push({
+      code: "fake_connection",
+      message: "The experience-to-research sentence injects scraped webpage text instead of a conceptual bridge.",
+    });
+  }
+
   for (const claim of input.body.split("\n").map((line) => line.trim()).filter(Boolean)) {
     const result = isResumeSupportedClaim(claim, input.student);
     if (!result.ok && /clinicalhours|canvas companion|chartwise|built|created/.test(claim.toLowerCase())) {
@@ -151,12 +174,17 @@ export function validateEmailDraft(input: {
   }
 
   const evidenceBlob = input.evidenceTexts.join(" ").replace(/\s+/g, " ").trim();
-  if (!input.forQueue && evidenceBlob.length >= 80 && !input.insufficientEvidence) {
+  if (evidenceBlob.length >= 80 && !input.insufficientEvidence) {
     const detail = extractGroundedResearchDetail({
       topics: input.topics,
       evidenceTexts: input.evidenceTexts,
     });
-    if (!detail || !draftUsesResearchDetail(input.body, detail)) {
+    if (!detail) {
+      failures.push({
+        code: "research_not_verified",
+        message: "Retrieved pages did not yield a verified research problem. Do not send a scraped-text email.",
+      });
+    } else if (!draftUsesResearchDetail(input.body, detail)) {
       failures.push({
         code: "research_detail_missing",
         message: "Email does not include a retrieved detail from this professor's research.",

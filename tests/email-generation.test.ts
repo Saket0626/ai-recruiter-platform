@@ -52,7 +52,7 @@ describe("email generation and quality gates", () => {
     expect(ai.body).not.toEqual(security.body);
     expect(ai.body).not.toEqual(info.body);
     expect(ai.subject).not.toEqual(security.subject);
-    expect(ai.body).toMatch(/Hello Dr\. Ng,/);
+    expect(ai.body).toMatch(/Dear Dr\. Ng,/);
     expect(ai.body).toMatch(/attached my resume for your review/i);
     expect(ai.body).toMatch(/continue through the spring and beyond/i);
     expect(ai.body).toMatch(/Sincerely,\nSaket/);
@@ -157,7 +157,7 @@ describe("email generation and quality gates", () => {
         insufficientEvidence: false,
         forQueue: true,
       }).some((item) => item.code === "research_detail_missing"),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("fails the quality gate when evidence is missing", () => {

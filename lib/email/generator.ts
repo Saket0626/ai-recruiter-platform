@@ -1,5 +1,6 @@
 import { familyForTopics } from "@/lib/research/scorer";
-import { extractGroundedResearchDetail } from "@/lib/email/research-detail";
+import { interpretProfessorResearch } from "@/lib/research/interpret";
+import { matchResumeToResearch, type ResumeMatch } from "@/lib/email/resume-match";
 import { sanitizeGeneratedText } from "@/lib/email/style";
 import { DEFAULT_AVAILABILITY_SENTENCE } from "@/lib/config/defaults";
 import type { GeneratedEmail, StudentProfile } from "@/lib/validation/schemas";
@@ -14,7 +15,7 @@ type StudentWork = {
 };
 
 function honorificLastName(lastName: string, fullName?: string) {
-  const source = `${lastName} ${fullName ?? ""}`.trim();
+  const source = `${fullName || ""} ${lastName}`.trim();
   const parts = source
     .replace(/[^A-Za-z.'\- ]/g, " ")
     .split(/\s+/)
@@ -45,119 +46,29 @@ function allWork(profile: StudentProfile): StudentWork[] {
   ];
 }
 
-function namedWork(profile: StudentProfile, name: string) {
-  return allWork(profile).find((item) => item.name.toLowerCase() === name.toLowerCase());
-}
-
-function firstSentence(summary: string) {
-  const cleaned = summary.replace(/\s+/g, " ").trim();
-  const match = cleaned.match(/^.+?[.](?=\s|$)/);
-  return (match?.[0] || cleaned).slice(0, 280);
-}
-
-function pickWork(topics: string[], profile: StudentProfile) {
-  const joined = topics.join(" ").toLowerCase();
-  if (/language model|nlp|machine learning|artificial intelligence|vision|deep learning/.test(joined)) {
-    return namedWork(profile, "Canvas Companion") ?? allWork(profile)[0];
-  }
-  if (/security|privacy|cyber/.test(joined)) {
-    return namedWork(profile, "ClinicalHours") ?? allWork(profile)[0];
-  }
-  if (/database|data|pipeline|systems/.test(joined)) {
-    return namedWork(profile, "ChartWise") ?? namedWork(profile, "ClinicalHours") ?? allWork(profile)[0];
-  }
-  if (/information systems|hci|organization/.test(joined)) {
-    return namedWork(profile, "ClinicalHours") ?? namedWork(profile, "Cloud of Goods") ?? allWork(profile)[0];
-  }
-  if (/software engineering|program analysis/.test(joined)) {
-    return namedWork(profile, "Canvas Companion") ?? namedWork(profile, "ChartWise") ?? allWork(profile)[0];
-  }
-  return namedWork(profile, "Cloud of Goods") ?? namedWork(profile, "ChartWise") ?? allWork(profile)[0];
-}
-
-function formatTopics(topics: string[]) {
-  if (topics.length === 0) return "your research area";
-  if (topics.length === 1) return topics[0];
-  if (topics.length === 2) return `${topics[0]} and ${topics[1]}`;
-  return `${topics.slice(0, -1).join(", ")}, and ${topics[topics.length - 1]}`;
-}
-
 function degreeFocus(profile: StudentProfile) {
   return profile.degree.replace(/^B\.S\.\s+/i, "") || "Computer Information Systems and Technology";
 }
 
-function claimForWork(work: StudentWork | undefined, profile: StudentProfile) {
-  const skills = profile.technicalSkills.slice(0, 3).join(", ") || "TypeScript and Python";
-  if (!work) return `worked on undergraduate software projects using ${skills}`;
-
-  const haystacks = [
-    work.summary,
-    ...allWork(profile).map((item) => item.summary),
-    ...profile.accomplishments,
-    profile.resumeText,
-  ].filter(Boolean);
-
-  for (const text of haystacks) {
-    const sentences = `${text}.`.split(/(?<=[.!?])\s+/);
-    const hit = sentences.find((sentence) => {
-      const lower = sentence.toLowerCase();
-      return lower.includes(work.name.toLowerCase()) && sentence.replace(/\s+/g, " ").trim().length > work.name.length + 24;
-    });
-    if (hit) {
-      return firstSentence(hit)
-        .replace(new RegExp(`^${work.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*:\\s*`, "i"), "")
-        .replace(/^I\s+/i, "")
-        .replace(/[.]+$/, "");
-    }
-  }
-
-  const summary = firstSentence(work.summary).replace(/^I\s+/i, "").replace(/[.]+$/, "");
-  if (summary.toLowerCase() === work.name.toLowerCase()) {
-    return `worked on ${work.name} using ${skills}`;
-  }
-  return summary;
+function uncapitalize(text: string) {
+  const value = text.replace(/\s+/g, " ").trim();
+  if (!value) return value;
+  return value.charAt(0).toLowerCase() + value.slice(1);
 }
 
-function experienceParagraph(topics: string[], profile: StudentProfile) {
-  const work = pickWork(topics, profile);
-  const core = claimForWork(work, profile);
-  const started = core.charAt(0).toLowerCase() + core.slice(1);
-  if (work?.name.toLowerCase() === "clinicalhours") {
-    return `I recently ${started}, and became fascinated by how technology affects the way people and organizations use and share information.`;
+function experienceParagraph(match: ResumeMatch) {
+  const fact = uncapitalize(match.verifiedFact.replace(/[.]+$/, ""));
+  if (match.experienceName.toLowerCase() === "clinicalhours") {
+    return `I recently helped a small startup, ClinicalHours, with software development. I ${fact}.`.replace(/\s+/g, " ").trim();
   }
-  return `I recently ${started}.`;
+  return `I recently ${fact}.`.replace(/\s+/g, " ").trim();
 }
 
-function connectionParagraph(topics: string[], labWork: string, profile: StudentProfile) {
-  const topicPhrase = formatTopics(topics);
-  const focus = topics[0] || "this research";
-  const joined = topics.join(" ").toLowerCase();
-  const work = pickWork(topics, profile);
-  if (/information systems/.test(joined)) {
-    return `Seeing how technology is used within organizations made me curious about ${labWork}. I am eager to gain experience in your lab, applying my background in technology to help investigate ${focus} while learning more about ${topicPhrase}.`;
+function connectionParagraph(match: ResumeMatch, specific: string, broad: string) {
+  if (match.honestCuriosity) {
+    return `${match.conceptualBridge} I am eager to gain research experience in your lab while learning more about ${broad}.`;
   }
-  if (/security|privacy/.test(joined)) {
-    return `My work on ${work?.name || "undergraduate software projects"} made me curious about ${labWork}. I am eager to gain experience in your lab, applying my background in technology to help investigate ${focus} while learning more about ${topicPhrase}.`;
-  }
-  if (/artificial intelligence|machine learning|language model/.test(joined)) {
-    return `My work on ${work?.name || "undergraduate software projects"} made me curious about ${labWork}. I am eager to gain experience in your lab, applying my background in technology to help investigate ${focus} while learning more about ${topicPhrase}.`;
-  }
-  return `My work on ${work?.name || "undergraduate software projects"} made me curious about ${labWork}. I am eager to gain experience in your lab, applying my background in technology to help investigate ${focus} while learning more about ${topicPhrase}.`;
-}
-
-function labWorkPhrase(input: {
-  topics: string[];
-  researchSummary: string;
-  evidenceTexts?: string[];
-}) {
-  const evidence =
-    input.evidenceTexts && input.evidenceTexts.join("").trim()
-      ? input.evidenceTexts
-      : [input.researchSummary, ...input.topics].filter(Boolean);
-  return extractGroundedResearchDetail({
-    topics: input.topics,
-    evidenceTexts: evidence,
-  }) || input.topics[0] || "this research";
+  return `${match.conceptualBridge} Your work on ${specific} especially interested me because it is a concrete research problem in ${broad}. I am eager to gain research experience in your lab while learning more about ${broad}.`;
 }
 
 export function generateGroundedEmail(input: {
@@ -170,23 +81,25 @@ export function generateGroundedEmail(input: {
   availabilitySentence?: string;
 }): GeneratedEmail {
   const topics = input.topics.slice(0, 3);
-  const topicPhrase = formatTopics(topics);
-  const labWork = labWorkPhrase({
+  const research = interpretProfessorResearch({
     topics,
+    evidenceTexts: input.evidenceTexts?.length ? input.evidenceTexts : undefined,
     researchSummary: input.researchSummary,
-    evidenceTexts: input.evidenceTexts,
   });
+  const specific = research.specificProblem || topics[0] || "this research";
+  const broad = research.broadArea || topics[0] || "this research";
+  const match = matchResumeToResearch({ student: input.student, research, topics });
   const studentName = input.student.name.split(" ")[0] || "Saket";
   const availability = (input.availabilitySentence ?? DEFAULT_AVAILABILITY_SENTENCE).replace(/[.]+$/, "");
   const body = sanitizeGeneratedText(
     [
-      `Hello ${honorific(input.professorLastName, input.professorFullName)},`,
+      `Dear ${honorific(input.professorLastName, input.professorFullName)},`,
       ``,
-      `My name is ${studentName}, and I am a ${input.student.currentStatus.toLowerCase()} at UT Dallas interested in pursuing ${degreeFocus(input.student)}. I am interested in your research on ${topicPhrase}. I would love to learn more about your lab's work on ${labWork} and see if I am able to assist with your research this year.`,
+      `My name is ${studentName}, and I am a ${input.student.currentStatus.toLowerCase()} at UT Dallas interested in pursuing ${degreeFocus(input.student)}. I am very interested in your research on ${broad}, particularly ${specific}. I would love to learn more about your lab's work and see if I could assist with your research.`,
       ``,
-      experienceParagraph(topics, input.student),
+      experienceParagraph(match),
       ``,
-      `${connectionParagraph(topics, labWork, input.student)} I have attached my resume for your review. ${availability}. I can contribute a few hours each week and I am hoping to learn how your group approaches this work in practice. Thank you for your time and consideration!`,
+      `${connectionParagraph(match, specific, broad)} I have attached my resume for your review. ${availability}. I can contribute a few hours each week and I am hoping to learn how your group approaches this work in practice. Thank you for your time and consideration.`,
       ``,
       `Sincerely,`,
       studentName,
@@ -197,11 +110,11 @@ export function generateGroundedEmail(input: {
   const subject =
     family === "ai"
       ? "Undergraduate Research Interest in AI Systems"
-      : /security/.test(topicPhrase)
+      : /security/.test(broad)
         ? "Undergraduate Research Interest in Software Security"
-        : /information systems/.test(topicPhrase)
+        : /information systems/.test(broad)
           ? "Interest in Undergraduate Research in Information Systems"
-          : /program analysis/.test(topicPhrase)
+          : /program analysis/.test(broad)
             ? "Research Interest in Program Analysis"
             : `UT Dallas Student Interested in Your ${topics[0] || "Research"} Research`;
 
