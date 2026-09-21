@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { hasPublishedResearch, publicationLinks, primaryResearchLink } from "@/lib/research/publications";
 import { formatOutreachPackage, outreachPackageFromDraft } from "@/lib/bot/packages";
 import { filterNewPackages, parseSeenFromDocText } from "@/lib/bot/ledger";
-import { pickNextColleges, rotationColleges } from "@/lib/bot/rotation";
+import { pickNextColleges, rotationColleges, texasRotationColleges } from "@/lib/bot/rotation";
 import { isSaketRelevantResearch } from "@/lib/research/keywords";
 
 describe("publication evidence", () => {
@@ -155,5 +155,29 @@ Hello
     expect(names).toContain("Arizona State University");
     expect(names).toContain("University of Texas at Austin");
     expect(names).not.toContain("University of Iowa");
+  });
+
+  it("orders a Texas-only hour UTD, UT Austin, then TAMU", () => {
+    const names = texasRotationColleges().map((university) => university.name);
+    expect(names.slice(0, 3)).toEqual([
+      "University of Texas at Dallas",
+      "University of Texas at Austin",
+      "Texas A&M University",
+    ]);
+    expect(names.every((name) => /texas|rice|smu|southern methodist|baylor|houston/i.test(name))).toBe(true);
+    const { colleges } = pickNextColleges(
+      {
+        nextCollegeIndex: 12,
+        seenEmails: [],
+        seenKeys: [],
+        perCollege: { "University of Texas at Dallas": 15 },
+      },
+      40,
+      { catalog: texasRotationColleges(), startIndex: 0, requireCapacity: false },
+    );
+    expect(colleges[0]).toBe("University of Texas at Dallas");
+    expect(colleges[1]).toBe("University of Texas at Austin");
+    expect(colleges[2]).toBe("Texas A&M University");
+    expect(colleges).not.toContain("Princeton University");
   });
 });

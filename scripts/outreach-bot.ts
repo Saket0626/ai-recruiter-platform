@@ -17,6 +17,7 @@ function numberFlag(name: string, fallback: number) {
 async function main() {
   const send = flag("--send");
   const reportOnly = flag("--report");
+  const texasOnly = flag("--texas");
   const maxCandidates = numberFlag("--max", 0);
   const collegesPerRun = numberFlag("--colleges", COLLEGES_PER_RUN);
   const result = await runOutreachBot({
@@ -24,6 +25,7 @@ async function main() {
     reportOnly,
     maxCandidates: maxCandidates || undefined,
     collegesPerRun,
+    texasOnly,
   });
   console.log(printOutreachPackages(result.packages));
   console.log(`\nColleges this run: ${result.colleges.join(" | ") || "none"}`);

@@ -9,3 +9,17 @@ export const PREFERRED_COLLEGES = [
   "University of Texas at Dallas",
   "University of Texas at Austin",
 ];
+
+/** Texas-only hour: UTD, UT Austin, TAMU first, then other catalog Texas schools. */
+export const TEXAS_COLLEGES = [
+  "University of Texas at Dallas",
+  "University of Texas at Austin",
+  "Texas A&M University",
+  "Rice University",
+  "Southern Methodist University",
+  "Baylor University",
+  "Texas Christian University",
+  "University of Houston",
+  "University of Texas at Arlington",
+  "University of Texas at San Antonio",
+];

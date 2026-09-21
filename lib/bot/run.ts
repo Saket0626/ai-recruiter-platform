@@ -15,7 +15,7 @@ import {
 } from "@/lib/bot/config";
 import { seenFromCursorDoc, syncCursorOutreachDoc } from "@/lib/bot/cursor-doc";
 import { filterNewPackages, loadLedger, mergeSeen, recordPackages, saveLedger } from "@/lib/bot/ledger";
-import { pickNextColleges } from "@/lib/bot/rotation";
+import { pickNextColleges, texasRotationColleges } from "@/lib/bot/rotation";
 import { logger } from "@/lib/logging/logger";
 
 const SAKET_INTERESTS = [
@@ -69,6 +69,7 @@ export async function runOutreachBot(input: {
   reportOnly?: boolean;
   maxCandidates?: number;
   collegesPerRun?: number;
+  texasOnly?: boolean;
 }) {
   const resume = await loadStudentProfile();
   if (!resume.ok) {
@@ -76,11 +77,21 @@ export async function runOutreachBot(input: {
   }
 
   let ledger = mergeSeen(await loadLedger(), await seenFromCursorDoc());
-  const batch = pickNextColleges(ledger, input.collegesPerRun ?? COLLEGES_PER_RUN);
+  const batch = input.texasOnly
+    ? pickNextColleges(ledger, input.collegesPerRun ?? COLLEGES_PER_RUN, {
+        catalog: texasRotationColleges(),
+        startIndex: 0,
+        requireCapacity: false,
+      })
+    : pickNextColleges(ledger, input.collegesPerRun ?? COLLEGES_PER_RUN);
 
   if (!input.reportOnly) {
     if (!batch.colleges.length) {
-      throw new Error("Every college in the Top 100 catalog already has 15 professors in outreach-drafts.txt.");
+      throw new Error(
+        input.texasOnly
+          ? "No Texas colleges were found in the university catalog."
+          : "Every college in the Top 100 catalog already has 15 professors in outreach-drafts.txt.",
+      );
     }
     const { runDiscovery } = await import("@/lib/research/pipeline");
     await runDiscovery({
@@ -93,12 +104,15 @@ export async function runOutreachBot(input: {
       maxCandidatesPerUniversity: MAX_PROFESSORS_PER_COLLEGE,
       minScore: 50,
     });
-    ledger = { ...ledger, nextCollegeIndex: batch.nextCollegeIndex };
+    if (!input.texasOnly) {
+      ledger = { ...ledger, nextCollegeIndex: batch.nextCollegeIndex };
+    }
   }
 
   const discovered = await listOutreachPackages(input.reportOnly ? undefined : batch.colleges);
-  const packages = filterNewPackages(discovered, ledger).fresh.slice(0, MAX_PACKAGES_PER_RUN);
-  ledger = recordPackages(ledger, packages);
+  const capOptions = input.texasOnly ? { ignoreCollegeCap: true } : undefined;
+  const packages = filterNewPackages(discovered, ledger, capOptions).fresh.slice(0, MAX_PACKAGES_PER_RUN);
+  ledger = recordPackages(ledger, packages, capOptions);
   await saveLedger(ledger);
   const outbox = await writeOutreachOutbox(packages);
   logger.info("outreach_packages_ready", {

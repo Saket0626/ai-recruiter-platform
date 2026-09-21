@@ -68,7 +68,11 @@ export function collegeHasCapacity(ledger: OutreachLedger, college: string) {
   return (ledger.perCollege[college] ?? 0) < MAX_PROFESSORS_PER_COLLEGE;
 }
 
-export function filterNewPackages(packages: OutreachPackage[], ledger: OutreachLedger) {
+export function filterNewPackages(
+  packages: OutreachPackage[],
+  ledger: OutreachLedger,
+  options?: { ignoreCollegeCap?: boolean },
+) {
   const used = new Set(ledger.seenEmails);
   const keys = new Set(ledger.seenKeys);
   const perCollege = { ...ledger.perCollege };
@@ -77,7 +81,7 @@ export function filterNewPackages(packages: OutreachPackage[], ledger: OutreachL
     const email = normalizeEmail(pkg.professorEmail);
     const key = professorKey(email, pkg.professorName, pkg.college);
     if (used.has(email) || keys.has(key)) continue;
-    if ((perCollege[pkg.college] ?? 0) >= MAX_PROFESSORS_PER_COLLEGE) continue;
+    if (!options?.ignoreCollegeCap && (perCollege[pkg.college] ?? 0) >= MAX_PROFESSORS_PER_COLLEGE) continue;
     used.add(email);
     keys.add(key);
     perCollege[pkg.college] = (perCollege[pkg.college] ?? 0) + 1;
@@ -86,8 +90,12 @@ export function filterNewPackages(packages: OutreachPackage[], ledger: OutreachL
   return { fresh, perCollege };
 }
 
-export function recordPackages(ledger: OutreachLedger, packages: OutreachPackage[]): OutreachLedger {
-  const { fresh, perCollege } = filterNewPackages(packages, ledger);
+export function recordPackages(
+  ledger: OutreachLedger,
+  packages: OutreachPackage[],
+  options?: { ignoreCollegeCap?: boolean },
+): OutreachLedger {
+  const { fresh, perCollege } = filterNewPackages(packages, ledger, options);
   const emails = new Set(ledger.seenEmails);
   const keys = new Set(ledger.seenKeys);
   for (const pkg of fresh) {
