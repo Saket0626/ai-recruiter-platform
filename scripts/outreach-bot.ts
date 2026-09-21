@@ -18,6 +18,7 @@ async function main() {
   const send = flag("--send");
   const reportOnly = flag("--report");
   const texasOnly = flag("--texas");
+  const californiaTexasOnly = flag("--ca-tx") || flag("--california-texas");
   const utdOnly = flag("--utd");
   const maxCandidates = numberFlag("--max", 0);
   const collegesPerRun = numberFlag("--colleges", COLLEGES_PER_RUN);
@@ -27,6 +28,7 @@ async function main() {
     maxCandidates: maxCandidates || undefined,
     collegesPerRun,
     texasOnly,
+    californiaTexasOnly,
     utdOnly,
   });
   console.log(printOutreachPackages(result.packages));

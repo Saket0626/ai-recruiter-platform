@@ -1,4 +1,10 @@
-import { ASU_WORST_RANK, COLLEGES_PER_RUN, PREFERRED_COLLEGES, TEXAS_COLLEGES } from "@/lib/bot/config";
+import {
+  ASU_WORST_RANK,
+  CALIFORNIA_COLLEGES,
+  COLLEGES_PER_RUN,
+  PREFERRED_COLLEGES,
+  TEXAS_COLLEGES,
+} from "@/lib/bot/config";
 import { collegeHasCapacity, type OutreachLedger } from "@/lib/bot/ledger";
 import { UNIVERSITIES, getTop100Universities, type University } from "@/lib/universities/catalog";
 
@@ -17,10 +23,24 @@ export function rotationColleges() {
   return [...preferred, ...rest];
 }
 
+function collegesFromNames(names: string[]) {
+  const seen = new Set<string>();
+  const matched: University[] = [];
+  for (const name of names) {
+    const university = UNIVERSITIES.find((item) => item.name === name);
+    if (!university || seen.has(university.name)) continue;
+    seen.add(university.name);
+    matched.push(university);
+  }
+  return matched;
+}
+
 export function texasRotationColleges() {
-  return TEXAS_COLLEGES.map((name) => UNIVERSITIES.find((university) => university.name === name)).filter(
-    (university): university is University => Boolean(university),
-  );
+  return collegesFromNames(TEXAS_COLLEGES);
+}
+
+export function californiaTexasRotationColleges() {
+  return collegesFromNames([...TEXAS_COLLEGES, ...CALIFORNIA_COLLEGES]);
 }
 
 export function pickNextColleges(

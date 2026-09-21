@@ -24,3 +24,23 @@ export const TEXAS_COLLEGES = [
   "University of Texas at Arlington",
   "University of Texas at San Antonio",
 ];
+
+/** California schools for the CA+TX cycle after the national 10-hour run. */
+export const CALIFORNIA_COLLEGES = [
+  "Stanford University",
+  "California Institute of Technology",
+  "University of California, Berkeley",
+  "University of California, Los Angeles",
+  "University of Southern California",
+  "University of California, San Diego",
+  "University of California, Irvine",
+  "University of California, Davis",
+  "University of California, Santa Barbara",
+  "University of California, Santa Cruz",
+  "University of California, Riverside",
+  "University of California, Merced",
+  "California Polytechnic State University",
+  "Santa Clara University",
+  "San Diego State University",
+  "Pepperdine University",
+];

@@ -27,6 +27,8 @@ The bot reads `~/.cursor/outreach-drafts.txt` first so the same professor is nev
 ```bash
 npm run bot -- --report           # print new packages, do not crawl again
 npm run bot -- --colleges=40      # default batch size
+npm run bot -- --texas            # Texas schools only (UTD, UT Austin, TAMU first)
+npm run bot -- --ca-tx            # Texas then California schools
 npm run bot -- --send             # live Gmail only if DRY_RUN=false
 ```
 

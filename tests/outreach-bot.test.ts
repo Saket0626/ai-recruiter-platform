@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 import { hasPublishedResearch, publicationLinks, primaryResearchLink } from "@/lib/research/publications";
 import { formatOutreachPackage, outreachPackageFromDraft } from "@/lib/bot/packages";
 import { filterNewPackages, parseSeenFromDocText } from "@/lib/bot/ledger";
-import { pickNextColleges, rotationColleges, texasRotationColleges } from "@/lib/bot/rotation";
+import {
+  californiaTexasRotationColleges,
+  pickNextColleges,
+  rotationColleges,
+  texasRotationColleges,
+} from "@/lib/bot/rotation";
 import { isSaketRelevantResearch } from "@/lib/research/keywords";
 
 describe("publication evidence", () => {
@@ -183,5 +188,34 @@ Hello
 
   it("can target UT Dallas alone", () => {
     expect(texasRotationColleges()[0]?.name).toBe("University of Texas at Dallas");
+  });
+
+  it("orders a CA+TX cycle Texas first, then California, with no other states", () => {
+    const names = californiaTexasRotationColleges().map((university) => university.name);
+    expect(names.slice(0, 4)).toEqual([
+      "University of Texas at Dallas",
+      "University of Texas at Austin",
+      "Texas A&M University",
+      "Rice University",
+    ]);
+    expect(names).toContain("Stanford University");
+    expect(names).toContain("University of California, Berkeley");
+    expect(names).toContain("University of California, Los Angeles");
+    expect(names).not.toContain("Princeton University");
+    expect(names).not.toContain("Boston University");
+    const { colleges } = pickNextColleges(
+      { nextCollegeIndex: 40, seenEmails: [], seenKeys: [], perCollege: {} },
+      40,
+      { catalog: californiaTexasRotationColleges(), startIndex: 0, requireCapacity: false },
+    );
+    expect(colleges[0]).toBe("University of Texas at Dallas");
+    expect(colleges).toContain("Stanford University");
+    expect(
+      colleges.every((name) =>
+        /texas|rice|smu|southern methodist|baylor|houston|california|stanford|caltech|usc|southern california|santa clara|san diego state|pepperdine|polytechnic/i.test(
+          name,
+        ),
+      ),
+    ).toBe(true);
   });
 });
