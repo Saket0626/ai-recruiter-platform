@@ -149,6 +149,7 @@ export async function executeDiscovery(runId: string) {
         research,
         remaining: capPerSchool,
         progress,
+        countOnlyEmailed: universities.length === 1,
       });
       progress.universitiesDone += 1;
       await updateRun(run.id, {
@@ -181,10 +182,13 @@ async function discoverOneUniversity(input: {
   research: FallbackResearchProvider;
   remaining: number;
   progress: Progress;
+  countOnlyEmailed?: boolean;
 }) {
   if (input.remaining <= 0) return;
   const search = new CompositeSearchProvider(input.university.seedUrls);
-  const scanBudget = Math.max(input.remaining * 8, 12);
+  const scanBudget = input.countOnlyEmailed
+    ? Math.max(input.remaining * 8, 80)
+    : Math.max(input.remaining * 8, 12);
   const hits = await search.searchFaculty({
     university: input.university.name,
     domain: input.university.domain,
@@ -253,8 +257,8 @@ async function discoverOneUniversity(input: {
       input.progress.discovered += 1;
       if (result.researched) input.progress.researched += 1;
       if (result.qualified) input.progress.qualified += 1;
-      if (result.queued) {
-        input.progress.queued += 1;
+      if (result.queued) input.progress.queued += 1;
+      if (input.countOnlyEmailed ? result.emailed : result.queued) {
         aiQueued += 1;
       }
       await updateRun(input.runId, {
@@ -471,7 +475,7 @@ async function persistAndResearch(input: {
   if (existingDraft && !containsPageGarbage(existingDraft.body)) {
     logger.info("draft_generated", { draftId: existingDraft.id, professorId: professor.id, reused: true });
     await prisma.professor.update({ where: { id: professor.id }, data: { status: "QUEUED" } });
-    return { researched: true, qualified: true, queued: true };
+    return { researched: true, qualified: true, queued: true, emailed: false };
   }
   if (existingDraft) {
     await prisma.emailDraft.update({
@@ -564,6 +568,7 @@ async function persistAndResearch(input: {
     );
 
     if (blocking.length === 0) {
+      let emailed = false;
       await prisma.professor.update({ where: { id: professor.id }, data: { status: "QUEUED" } });
       try {
         const pkg = outreachPackageFromDraft({
@@ -581,6 +586,7 @@ async function persistAndResearch(input: {
           if (failures.length === 0) {
             try {
               const posted = await postProfessorToN8n(pkg);
+              emailed = posted.ok && !posted.skipped;
               if (!posted.skipped) await webhookDelay();
             } catch (error) {
               logger.warn("n8n_webhook_failed", {
@@ -600,7 +606,7 @@ async function persistAndResearch(input: {
         await sleep(jitterDelayMs());
         await sendApprovedDraft(draft.id, { autopilot: true });
       }
-      return { researched: true, qualified: true, queued: true };
+      return { researched: true, qualified: true, queued: true, emailed };
     }
     return { researched: true, qualified: true, queued: false };
   } catch (error) {

@@ -1,4 +1,5 @@
 export const MAX_PROFESSORS_PER_COLLEGE = 15;
+export const UTD_DEEP_CANDIDATES = 80;
 export const COLLEGES_PER_RUN = 40;
 export const MAX_PACKAGES_PER_RUN = 50;
 export const TARGET_PACKAGES_PER_RUN = 50;

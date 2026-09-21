@@ -12,6 +12,7 @@ import {
   COLLEGES_PER_RUN,
   MAX_PACKAGES_PER_RUN,
   MAX_PROFESSORS_PER_COLLEGE,
+  UTD_DEEP_CANDIDATES,
 } from "@/lib/bot/config";
 import { seenFromCursorDoc, syncCursorOutreachDoc } from "@/lib/bot/cursor-doc";
 import { filterNewPackages, loadLedger, mergeSeen, recordPackages, saveLedger } from "@/lib/bot/ledger";
@@ -70,6 +71,7 @@ export async function runOutreachBot(input: {
   maxCandidates?: number;
   collegesPerRun?: number;
   texasOnly?: boolean;
+  utdOnly?: boolean;
 }) {
   const resume = await loadStudentProfile();
   if (!resume.ok) {
@@ -77,13 +79,15 @@ export async function runOutreachBot(input: {
   }
 
   let ledger = mergeSeen(await loadLedger(), await seenFromCursorDoc());
-  const batch = input.texasOnly
-    ? pickNextColleges(ledger, input.collegesPerRun ?? COLLEGES_PER_RUN, {
-        catalog: texasRotationColleges(),
-        startIndex: 0,
-        requireCapacity: false,
-      })
-    : pickNextColleges(ledger, input.collegesPerRun ?? COLLEGES_PER_RUN);
+  const batch = input.utdOnly
+    ? { colleges: ["University of Texas at Dallas"], nextCollegeIndex: ledger.nextCollegeIndex }
+    : input.texasOnly
+      ? pickNextColleges(ledger, input.collegesPerRun ?? COLLEGES_PER_RUN, {
+          catalog: texasRotationColleges(),
+          startIndex: 0,
+          requireCapacity: false,
+        })
+      : pickNextColleges(ledger, input.collegesPerRun ?? COLLEGES_PER_RUN);
 
   if (!input.reportOnly) {
     if (!batch.colleges.length) {
@@ -100,17 +104,19 @@ export async function runOutreachBot(input: {
       department: "Computer Science",
       seedUrls: [],
       researchInterests: SAKET_INTERESTS,
-      maxCandidates: input.maxCandidates ?? COLLEGES_PER_RUN * MAX_PROFESSORS_PER_COLLEGE,
-      maxCandidatesPerUniversity: MAX_PROFESSORS_PER_COLLEGE,
+      maxCandidates: input.utdOnly
+        ? MAX_PROFESSORS_PER_COLLEGE
+        : (input.maxCandidates ?? COLLEGES_PER_RUN * MAX_PROFESSORS_PER_COLLEGE),
+      maxCandidatesPerUniversity: input.utdOnly ? UTD_DEEP_CANDIDATES : MAX_PROFESSORS_PER_COLLEGE,
       minScore: 50,
     });
-    if (!input.texasOnly) {
+    if (!input.texasOnly && !input.utdOnly) {
       ledger = { ...ledger, nextCollegeIndex: batch.nextCollegeIndex };
     }
   }
 
   const discovered = await listOutreachPackages(input.reportOnly ? undefined : batch.colleges);
-  const capOptions = input.texasOnly ? { ignoreCollegeCap: true } : undefined;
+  const capOptions = input.texasOnly || input.utdOnly ? { ignoreCollegeCap: true } : undefined;
   const packages = filterNewPackages(discovered, ledger, capOptions).fresh.slice(0, MAX_PACKAGES_PER_RUN);
   ledger = recordPackages(ledger, packages, capOptions);
   await saveLedger(ledger);

@@ -180,4 +180,8 @@ Hello
     expect(colleges[2]).toBe("Texas A&M University");
     expect(colleges).not.toContain("Princeton University");
   });
+
+  it("can target UT Dallas alone", () => {
+    expect(texasRotationColleges()[0]?.name).toBe("University of Texas at Dallas");
+  });
 });
